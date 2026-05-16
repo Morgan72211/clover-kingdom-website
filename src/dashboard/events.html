@@ -737,7 +737,7 @@
       errorMsg.classList.add('hidden');
 
       try {
-        const response = await fetch('http://localhost:3000/api/events/create', {
+        const response = await fetch('/api/events/create', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -772,7 +772,7 @@
       container.innerHTML = '<div class="spinner"></div>';
 
       try {
-        const response = await fetch('http://localhost:3000/api/events');
+        const response = await fetch('/api/events');
         const data = await response.json();
 
         if (data.events && data.events.length > 0) {
@@ -827,7 +827,7 @@
       
       showModal('Update Status', `Change event status to ${newStatus}?`, async () => {
         try {
-          const response = await fetch(`http://localhost:3000/api/events/edit/${id}`, {
+          const response = await fetch(`/api/events/edit/${id}`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -852,7 +852,7 @@
     function deleteEvent(id, title) {
       showModal('Delete Event', `Delete "${title}"? This cannot be undone.`, async () => {
         try {
-          const response = await fetch(`http://localhost:3000/api/events/delete/${id}`, {
+          const response = await fetch(`/api/events/delete/${id}`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

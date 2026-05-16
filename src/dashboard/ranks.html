@@ -571,7 +571,7 @@
       error.classList.add('hidden');
 
       try {
-        const response = await fetch('http://localhost:3000/api/ranks/create', {
+        const response = await fetch('/api/ranks/create', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -607,7 +607,7 @@
       container.innerHTML = '<p style="color: #555;">Loading...</p>';
 
       try {
-        const response = await fetch('http://localhost:3000/api/ranks/list', {
+        const response = await fetch('/api/ranks/list', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -654,7 +654,7 @@
 
     async function doRankChange(username, newRank) {
       try {
-        const response = await fetch('http://localhost:3000/api/ranks/update', {
+        const response = await fetch('/api/ranks/update', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -691,7 +691,7 @@
 
     async function doDelete(username) {
       try {
-        const response = await fetch('http://localhost:3000/api/ranks/delete', {
+        const response = await fetch('/api/ranks/delete', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

@@ -468,7 +468,7 @@
 
         // Staff count (Wizard King+ only)
         if (userLevel >= 4) {
-          const staffRes = await fetch('http://localhost:3000/api/ranks/list', {
+          const staffRes = await fetch('/api/ranks/list', {
             headers: { 'Authorization': `Bearer ${token}` }
           });
           if (staffRes.ok) {
@@ -478,7 +478,7 @@
         }
 
         // Events count
-        const eventsRes = await fetch('http://localhost:3000/api/events');
+        const eventsRes = await fetch('/api/events');
         if (eventsRes.ok) {
           const eventsData = await eventsRes.json();
           const upcoming = eventsData.events?.filter(e => e.status === 'Upcoming') || [];
@@ -487,7 +487,7 @@
 
         // Appeals count (Captain+ only)
         if (userLevel >= 2) {
-          const appealsRes = await fetch('http://localhost:3000/api/appeals/review', {
+          const appealsRes = await fetch('/api/appeals/review', {
             headers: { 'Authorization': `Bearer ${token}` }
           });
           if (appealsRes.ok) {

@@ -666,7 +666,7 @@
       errorMsg.classList.add('hidden');
 
       try {
-        const response = await fetch('http://localhost:3000/api/announcements/create', {
+        const response = await /api/announcements/create', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -703,7 +703,7 @@
       container.innerHTML = '<p style="color: #555;">Loading...</p>';
 
       try {
-        const response = await fetch('http://localhost:3000/api/announcements');
+        const response = await /api/announcements');
         const data = await response.json();
 
         if (data.announcements && data.announcements.length > 0) {
