@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Appeals Review — Clover Kingdom Staff</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 240px;
+    padding: 1.5rem;
+  }
+
+  .main {
+    margin-left: 0;
+    padding: 1rem;
+  }
+
+  .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    padding: 1rem;
+  }
+
+  .card .value {
+    font-size: 2rem;
+  }
+
+  .main-header h1 {
+    font-size: 1.2rem;
+  }
+
+  .tabs {
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    padding: 0.8rem;
+    font-size: 0.75rem;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    max-width: 100%;
+  }
+
+  .announcement-item,
+  .event-item,
+  .appeal-item {
+    padding: 1rem;
+  }
+
+  .home-btn,
+  .logout-btn {
+    padding: 0.6rem;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    width: 260px;
+  }
+
+  .main-header h1 {
+    font-size: 1rem;
+  }
+
+  .card .value {
+    font-size: 1.8rem;
+  }
+}
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0a0a0a;
+      color: #ffffff;
+      min-height: 100vh;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.6s ease-out forwards;
+      opacity: 0;
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 280px;
+      height: 100vh;
+      background: #111;
+      border-right: 1px solid #222;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+
+    .sidebar-header {
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid #222;
+      animation: slideIn 0.5s ease-out forwards;
+    }
+
+    .sidebar-header h2 {
+      font-family: 'Cinzel', serif;
+      font-size: 1.2rem;
+    }
+
+    .sidebar-header small {
+      color: #666;
+      font-size: 0.75rem;
+    }
+
+    .user-info {
+      margin-bottom: 2rem;
+      padding: 1rem;
+      background: #1a1a1a;
+      border: 1px solid #222;
+      animation: fadeIn 0.5s ease-out 0.2s forwards;
+      opacity: 0;
+    }
+
+    .user-info .rank {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: #888;
+      margin-bottom: 0.3rem;
+    }
+
+    .user-info .name {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .sidebar-nav a {
+      display: block;
+      color: #aaa;
+      text-decoration: none;
+      padding: 0.8rem 0;
+      border-bottom: 1px solid #1a1a1a;
+      transition: all 0.3s;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      position: relative;
+    }
+
+    .sidebar-nav a::before {
+      content: '';
+      position: absolute;
+      left: -2rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 0;
+      background: #fff;
+      transition: height 0.3s, box-shadow 0.3s;
+    }
+
+    .sidebar-nav a:hover {
+      color: #fff;
+      padding-left: 10px;
+      text-shadow: 0 0 10px rgba(255,255,255,0.5);
+    }
+
+    .sidebar-nav a:hover::before {
+      height: 60%;
+      box-shadow: 0 0 15px rgba(255,255,255,0.8);
+    }
+
+    .sidebar-nav a.active {
+      color: #fff;
+    }
+
+    .sidebar-nav a.active::before {
+      height: 60%;
+      box-shadow: 0 0 15px rgba(255,255,255,0.8);
+    }
+
+    .home-btn, .logout-btn {
+      margin-top: 1rem;
+      width: 100%;
+      background: transparent;
+      border: 1px solid #333;
+      color: #888;
+      padding: 0.8rem;
+      cursor: pointer;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      transition: all 0.3s;
+      text-align: center;
+      text-decoration: none;
+      display: block;
+    }
+
+    .home-btn:hover {
+      border-color: #fff;
+      color: #fff;
+      box-shadow: 0 0 10px rgba(255,255,255,0.2);
+    }
+
+    .logout-btn:hover {
+      border-color: #e94560;
+      color: #e94560;
+    }
+
+    .main {
+      margin-left: 280px;
+      padding: 2rem;
+      max-width: 1000px;
+    }
+
+    .main-header {
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #222;
+      animation: fadeIn 0.6s ease-out forwards;
+    }
+
+    .main-header h1 {
+      font-family: 'Cinzel', serif;
+      font-size: 1.5rem;
+    }
+
+    .appeals-list {
+      margin-top: 2rem;
+    }
+
+    .appeal-item {
+      padding: 1.5rem;
+      background: #111;
+      border: 1px solid #222;
+      margin-bottom: 1rem;
+      animation: fadeIn 0.5s ease-out forwards;
+      opacity: 0;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .appeal-item:nth-child(1) { animation-delay: 0.1s; }
+    .appeal-item:nth-child(2) { animation-delay: 0.2s; }
+    .appeal-item:nth-child(3) { animation-delay: 0.3s; }
+    .appeal-item:nth-child(4) { animation-delay: 0.4s; }
+
+    .appeal-item:hover {
+      border-color: #333;
+      transform: translateX(5px);
+      box-shadow: -5px 0 20px rgba(255,255,255,0.05);
+    }
+
+    .appeal-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3px;
+      height: 100%;
+      background: #333;
+      transition: background 0.3s;
+    }
+
+    .appeal-item:hover::before {
+      background: #fff;
+      box-shadow: 0 0 10px rgba(255,255,255,0.5);
+    }
+
+    .appeal-status {
+      display: inline-block;
+      padding: 0.3rem 0.8rem;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      border: 1px solid #333;
+      margin-bottom: 1rem;
+    }
+
+    .appeal-status.pending { border-color: #fbbf24; color: #fbbf24; }
+    .appeal-status.approved { border-color: #4ade80; color: #4ade80; }
+    .appeal-status.denied { border-color: #e94560; color: #e94560; }
+
+    .appeal-item h3 {
+      font-family: 'Cinzel', serif;
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .appeal-item .meta {
+      font-size: 0.75rem;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 1rem;
+    }
+
+    .appeal-item .meta span {
+      color: #777;
+    }
+
+    .appeal-item p {
+      color: #aaa;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      margin-bottom: 0.8rem;
+    }
+
+    .appeal-item .label {
+      font-size: 0.7rem;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 0.3rem;
+    }
+
+    .appeal-actions {
+      margin-top: 1.5rem;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      background: transparent;
+      border: 1px solid #333;
+      color: #888;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      transition: all 0.3s;
+    }
+
+    .action-btn:hover {
+      border-color: #fff;
+      color: #fff;
+    }
+
+    .action-btn.approve:hover {
+      border-color: #4ade80;
+      color: #4ade80;
+    }
+
+    .action-btn.deny:hover {
+      border-color: #e94560;
+      color: #e94560;
+    }
+
+    .review-note {
+      width: 100%;
+      background: #0a0a0a;
+      border: 1px solid #333;
+      color: #fff;
+      padding: 0.8rem;
+      font-size: 0.9rem;
+      font-family: 'Inter', sans-serif;
+      margin-bottom: 0.5rem;
+    }
+
+    .spinner {
+      width: 30px;
+      height: 30px;
+      border: 2px solid #222;
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 2rem auto;
+    }
+
+    .no-appeals {
+      text-align: center;
+      color: #555;
+      padding: 3rem 0;
+      font-style: italic;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      z-index: 2000;
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: #111;
+      border: 1px solid #222;
+      padding: 2rem;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+      animation: fadeIn 0.3s ease-out forwards;
+    }
+
+    .modal h3 {
+      font-family: 'Cinzel', serif;
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+
+    .modal p {
+      color: #aaa;
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    .modal-btn {
+      background: transparent;
+      border: 1px solid #333;
+      color: #fff;
+      padding: 0.8rem 1.5rem;
+      cursor: pointer;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      transition: all 0.3s;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .modal-btn:hover {
+      border-color: #fff;
+    }
+
+    .modal-btn.confirm:hover {
+      border-color: #4ade80;
+      color: #4ade80;
+    }
+
+    .modal-btn.cancel:hover {
+      border-color: #e94560;
+      color: #e94560;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <h3 id="modalTitle">Confirm</h3>
+      <p id="modalMessage">Are you sure?</p>
+      <div class="modal-actions">
+        <button class="modal-btn cancel" onclick="modalCancel()">Cancel</button>
+        <button class="modal-btn confirm" onclick="modalConfirm()">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h2>Clover Kingdom</h2>
+      <small>Staff Portal</small>
+    </div>
+
+    <div class="user-info">
+      <div class="rank" id="userRank">Loading...</div>
+      <div class="name" id="userName">...</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="index.html">Dashboard</a>
+      <a href="commands.html">Commands</a>
+      <a href="events.html">Events</a>
+      <a href="appeals.html" class="active">Appeals</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="ranks.html" id="ranksLink" class="hidden">Rank Management</a>
+    </nav>
+
+    <a href="/index.html" class="home-btn">Return to Homepage</a>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </aside>
+
+  <main class="main">
+    <div class="main-header">
+      <h1>Appeals Review</h1>
+    </div>
+
+    <div class="appeals-list" id="appealsList">
+      <div class="spinner"></div>
+    </div>
+  </main>
+
+  <script>
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+    if (!token) {
+      window.location.href = '/login.html';
+    }
+
+    document.getElementById('userRank').textContent = user.rank || 'Unknown';
+    document.getElementById('userName').textContent = user.username || 'Unknown';
+
+    const rankHierarchy = {
+      'Vice Captain': 1,
+      'Captain': 2,
+      'Sovereign': 3,
+      'Wizard King': 4,
+      'Suki': 5
+    };
+
+    if (rankHierarchy[user.rank] >= 4) {
+      document.getElementById('ranksLink').classList.remove('hidden');
+    }
+
+    // Redirect if below Captain
+    if (rankHierarchy[user.rank] < 2) {
+      window.location.href = 'index.html';
+    }
+
+    // Modal
+    let modalCallback = null;
+
+    function showModal(title, message, onConfirm) {
+      document.getElementById('modalTitle').textContent = title;
+      document.getElementById('modalMessage').textContent = message;
+      document.getElementById('modalOverlay').classList.add('active');
+      modalCallback = onConfirm;
+    }
+
+    function modalConfirm() {
+      document.getElementById('modalOverlay').classList.remove('active');
+      if (modalCallback) modalCallback();
+      modalCallback = null;
+    }
+
+    function modalCancel() {
+      document.getElementById('modalOverlay').classList.remove('active');
+      modalCallback = null;
+    }
+
+    // Load appeals
+    async function loadAppeals() {
+      const container = document.getElementById('appealsList');
+      container.innerHTML = '<div class="spinner"></div>';
+
+      try {
+        const response = await fetch('http://localhost:3000/api/appeals/review', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const data = await response.json();
+
+        if (data.appeals && data.appeals.length > 0) {
+          container.innerHTML = data.appeals.map((a, i) => {
+            const statusClass = a.status.toLowerCase();
+            const dateStr = new Date(a.createdAt).toLocaleDateString();
+
+            return `
+              <div class="appeal-item" style="animation-delay: ${i * 0.1}s">
+                <span class="appeal-status ${statusClass}">${a.status}</span>
+                <h3>${a.type} Appeal — ${a.username}</h3>
+                <div class="meta">Discord: <span>${a.discordTag}</span> — Submitted ${dateStr}</div>
+                
+                <div class="label">Why they think it was wrong:</div>
+                <p>${a.reason}</p>
+                
+                <div class="label">Their explanation:</div>
+                <p>${a.explanation}</p>
+                
+                ${a.evidence ? `<div class="label">Evidence:</div><p>${a.evidence}</p>` : ''}
+                
+                ${a.status === 'Pending' ? `
+                <div class="appeal-actions">
+                  <input type="text" id="note-${a._id}" class="review-note" placeholder="Review note (optional)">
+                  <button class="action-btn approve" onclick="reviewAppeal('${a._id}', 'Approved')">Approve</button>
+                  <button class="action-btn deny" onclick="reviewAppeal('${a._id}', 'Denied')">Deny</button>
+                </div>
+                ` : `
+                <div class="meta">Reviewed by <span>${a.reviewedBy || 'Unknown'}</span> — ${a.reviewNote ? `Note: ${a.reviewNote}` : 'No note'}</div>
+                `}
+              </div>
+            `;
+          }).join('');
+        } else {
+          container.innerHTML = '<p class="no-appeals">No appeals to review.</p>';
+        }
+      } catch (error) {
+        container.innerHTML = '<p class="no-appeals">Failed to load appeals.</p>';
+      }
+    }
+
+    function reviewAppeal(id, status) {
+      const note = document.getElementById(`note-${id}`)?.value || '';
+
+      showModal(`${status} Appeal`, `Are you sure you want to ${status.toLowerCase()} this appeal?`, async () => {
+        try {
+          const response = await fetch(`http://localhost:3000/api/appeals/review/${id}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ status, reviewNote: note })
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            showModal('Success', `Appeal ${status.toLowerCase()}.`, () => loadAppeals());
+          } else {
+            showModal('Error', data.error || 'Failed to review.', null);
+          }
+        } catch (err) {
+          showModal('Error', 'Server error.', null);
+        }
+      });
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login.html';
+    }
+
+    loadAppeals();
+  </script>
+
+</body>
+</html>

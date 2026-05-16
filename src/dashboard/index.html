@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff Dashboard — Clover Kingdom</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 240px;
+    padding: 1.5rem;
+  }
+
+  .main {
+    margin-left: 0;
+    padding: 1rem;
+  }
+
+  .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    padding: 1rem;
+  }
+
+  .card .value {
+    font-size: 2rem;
+  }
+
+  .main-header h1 {
+    font-size: 1.2rem;
+  }
+
+  .tabs {
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    padding: 0.8rem;
+    font-size: 0.75rem;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    max-width: 100%;
+  }
+
+  .announcement-item,
+  .event-item,
+  .appeal-item {
+    padding: 1rem;
+  }
+
+  .home-btn,
+  .logout-btn {
+    padding: 0.6rem;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    width: 260px;
+  }
+
+  .main-header h1 {
+    font-size: 1rem;
+  }
+
+  .card .value {
+    font-size: 1.8rem;
+  }
+}
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0a0a0a;
+      color: #ffffff;
+      min-height: 100vh;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.6s ease-out forwards;
+      opacity: 0;
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 280px;
+      height: 100vh;
+      background: #111;
+      border-right: 1px solid #222;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+
+    .sidebar-header {
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid #222;
+      animation: slideIn 0.5s ease-out forwards;
+    }
+
+    .sidebar-header h2 {
+      font-family: 'Cinzel', serif;
+      font-size: 1.2rem;
+    }
+
+    .sidebar-header small {
+      color: #666;
+      font-size: 0.75rem;
+    }
+
+    .user-info {
+      margin-bottom: 2rem;
+      padding: 1rem;
+      background: #1a1a1a;
+      border: 1px solid #222;
+      animation: fadeIn 0.5s ease-out 0.2s forwards;
+      opacity: 0;
+    }
+
+    .user-info .rank {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: #888;
+      margin-bottom: 0.3rem;
+    }
+
+    .user-info .name {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .sidebar-nav a {
+      display: block;
+      color: #aaa;
+      text-decoration: none;
+      padding: 0.8rem 0;
+      border-bottom: 1px solid #1a1a1a;
+      transition: all 0.3s;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      position: relative;
+    }
+
+    .sidebar-nav a::before {
+      content: '';
+      position: absolute;
+      left: -2rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 0;
+      background: #fff;
+      transition: height 0.3s, box-shadow 0.3s;
+    }
+
+    .sidebar-nav a:hover {
+      color: #fff;
+      padding-left: 10px;
+      text-shadow: 0 0 10px rgba(255,255,255,0.5);
+    }
+
+    .sidebar-nav a:hover::before {
+      height: 60%;
+      box-shadow: 0 0 15px rgba(255,255,255,0.8);
+    }
+
+    .sidebar-nav a.active {
+      color: #fff;
+    }
+
+    .sidebar-nav a.active::before {
+      height: 60%;
+      box-shadow: 0 0 15px rgba(255,255,255,0.8);
+    }
+
+    .home-btn, .logout-btn {
+      margin-top: 1rem;
+      width: 100%;
+      background: transparent;
+      border: 1px solid #333;
+      color: #888;
+      padding: 0.8rem;
+      cursor: pointer;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      transition: all 0.3s;
+      text-align: center;
+      text-decoration: none;
+      display: block;
+    }
+
+    .home-btn:hover {
+      border-color: #fff;
+      color: #fff;
+      box-shadow: 0 0 10px rgba(255,255,255,0.2);
+    }
+
+    .logout-btn:hover {
+      border-color: #e94560;
+      color: #e94560;
+    }
+
+    .main {
+      margin-left: 280px;
+      padding: 2rem;
+    }
+
+    .main-header {
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #222;
+      animation: fadeIn 0.6s ease-out forwards;
+    }
+
+    .main-header h1 {
+      font-family: 'Cinzel', serif;
+      font-size: 1.5rem;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background: #111;
+      border: 1px solid #222;
+      padding: 1.5rem;
+      transition: all 0.3s;
+      animation: fadeIn 0.6s ease-out forwards;
+      opacity: 0;
+    }
+
+    .card:nth-child(1) { animation-delay: 0.1s; }
+    .card:nth-child(2) { animation-delay: 0.2s; }
+    .card:nth-child(3) { animation-delay: 0.3s; }
+
+    .card:hover {
+      border-color: #333;
+      transform: translateY(-3px);
+      box-shadow: 0 5px 20px rgba(255,255,255,0.05);
+    }
+
+    .card h3 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: #666;
+      margin-bottom: 1rem;
+      transition: color 0.3s;
+    }
+
+    .card:hover h3 {
+      color: #888;
+    }
+
+    .card .value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #fff;
+      font-family: 'Cinzel', serif;
+      letter-spacing: 0.05em;
+      display: inline-block;
+      min-width: 40px;
+      transition: all 0.5s ease-out;
+    }
+
+    .section {
+      background: #111;
+      border: 1px solid #222;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      animation: fadeIn 0.6s ease-out 0.4s forwards;
+      opacity: 0;
+    }
+
+    .section h2 {
+      font-family: 'Cinzel', serif;
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.8rem;
+      border-bottom: 1px solid #222;
+    }
+
+    .btn {
+      display: inline-block;
+      background: transparent;
+      border: 1px solid #333;
+      color: #fff;
+      padding: 0.6rem 1.2rem;
+      text-decoration: none;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-right: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .btn:hover {
+      border-color: #fff;
+      background: rgba(255,255,255,0.05);
+      box-shadow: 0 0 10px rgba(255,255,255,0.1);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .error {
+      color: #e94560;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h2>Clover Kingdom</h2>
+      <small>Staff Portal</small>
+    </div>
+
+    <div class="user-info">
+      <div class="rank" id="userRank">Loading...</div>
+      <div class="name" id="userName">...</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="index.html" class="active">Dashboard</a>
+      <a href="commands.html">Commands</a>
+      <a href="events.html">Events</a>
+      <a href="appeals.html">Appeals</a>
+      <a href="announcements.html">Post Announcement</a>
+      <a href="ranks.html" id="ranksLink" class="hidden">Rank Management</a>
+    </nav>
+
+    <a href="/index.html" class="home-btn">Return to Homepage</a>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </aside>
+
+  <main class="main">
+    <div class="main-header">
+      <h1>Dashboard</h1>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <h3>Total Staff</h3>
+        <div class="value" id="staffCount">0</div>
+      </div>
+      <div class="card">
+        <h3>Pending Appeals</h3>
+        <div class="value" id="appealsCount">0</div>
+      </div>
+      <div class="card">
+        <h3>Upcoming Events</h3>
+        <div class="value" id="eventsCount">0</div>
+      </div>
+    </div>
+
+    <div class="section" id="quickActions">
+      <h2>Quick Actions</h2>
+      <a href="announcements.html" class="btn">Post Announcement</a>
+      <a href="events.html" class="btn">Create Event</a>
+      <a href="appeals.html" class="btn" id="reviewAppealsBtn">Review Appeals</a>
+    </div>
+  </main>
+
+  <script>
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+    if (!token) {
+      window.location.href = '/login.html';
+    }
+
+    document.getElementById('userRank').textContent = user.rank || 'Unknown';
+    document.getElementById('userName').textContent = user.username || 'Unknown';
+
+    const rankHierarchy = {
+      'Vice Captain': 1,
+      'Captain': 2,
+      'Sovereign': 3,
+      'Wizard King': 4,
+      'Suki': 5
+    };
+
+    const userLevel = rankHierarchy[user.rank] || 0;
+
+    if (userLevel >= 4) {
+      document.getElementById('ranksLink').classList.remove('hidden');
+    }
+
+    if (userLevel < 2) {
+      document.getElementById('reviewAppealsBtn').classList.add('hidden');
+    }
+
+    // Count up animation with final glow effect
+    function animateCountUp(element, target, duration = 2000) {
+      const start = 0;
+      const startTime = performance.now();
+
+      function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Ease out cubic
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        const current = Math.floor(start + (target - start) * easeOut);
+        
+        element.textContent = current;
+
+        if (progress < 1) {
+          requestAnimationFrame(update);
+        } else {
+          // Final number reached — do glow effect
+          element.textContent = target;
+          element.style.textShadow = '0 0 30px rgba(255,255,255,0.8), 0 0 60px rgba(255,255,255,0.4)';
+          
+          // Fade out glow
+          setTimeout(() => {
+            element.style.transition = 'text-shadow 0.8s ease-out';
+            element.style.textShadow = 'none';
+          }, 400);
+        }
+      }
+
+      requestAnimationFrame(update);
+    }
+
+    async function loadStats() {
+      try {
+        let staffCount = 0;
+        let appealsCount = 0;
+        let eventsCount = 0;
+
+        // Staff count (Wizard King+ only)
+        if (userLevel >= 4) {
+          const staffRes = await fetch('http://localhost:3000/api/ranks/list', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (staffRes.ok) {
+            const staffData = await staffRes.json();
+            staffCount = staffData.count || 0;
+          }
+        }
+
+        // Events count
+        const eventsRes = await fetch('http://localhost:3000/api/events');
+        if (eventsRes.ok) {
+          const eventsData = await eventsRes.json();
+          const upcoming = eventsData.events?.filter(e => e.status === 'Upcoming') || [];
+          eventsCount = upcoming.length;
+        }
+
+        // Appeals count (Captain+ only)
+        if (userLevel >= 2) {
+          const appealsRes = await fetch('http://localhost:3000/api/appeals/review', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (appealsRes.ok) {
+            const appealsData = await appealsRes.json();
+            const pending = appealsData.appeals?.filter(a => a.status === 'Pending') || [];
+            appealsCount = pending.length;
+          }
+        }
+
+        // Animate the numbers with staggered delays
+        const staffEl = document.getElementById('staffCount');
+        const appealsEl = document.getElementById('appealsCount');
+        const eventsEl = document.getElementById('eventsCount');
+
+        setTimeout(() => {
+          if (userLevel >= 4) {
+            animateCountUp(staffEl, staffCount, 2000);
+          } else {
+            staffEl.textContent = '—';
+          }
+        }, 300);
+
+        setTimeout(() => {
+          if (userLevel >= 2) {
+            animateCountUp(appealsEl, appealsCount, 2000);
+          } else {
+            appealsEl.textContent = '—';
+          }
+        }, 600);
+
+        setTimeout(() => {
+          animateCountUp(eventsEl, eventsCount, 2000);
+        }, 900);
+
+      } catch (error) {
+        console.error('Stats error:', error);
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login.html';
+    }
+
+    loadStats();
+  </script>
+
+</body>
+</html>
