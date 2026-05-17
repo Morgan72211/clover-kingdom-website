@@ -1,51 +1,28 @@
 const express = require('express');
-const router = express.Router();
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const Staff = require('../../database/models/Staff');
+const User = require('../../database/models/User');
+const router = express.Router();
 
-router.post('/', async (req, res) => {
+router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
+    if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
 
-    if (!username || !password) {
-      return res.status(400).json({ error: 'Username and password required.' });
-    }
-
-    const staff = await Staff.findOne({ username: username.toLowerCase() });
-
-    if (!staff) {
-      return res.status(401).json({ error: 'Invalid username or password.' });
-    }
-
-    const isMatch = await bcrypt.compare(password, staff.password);
-
-    if (!isMatch) {
-      return res.status(401).json({ error: 'Invalid username or password.' });
+    // Remove .toLowerCase() to match exact case
+    const user = await User.findOne({ username: username.trim() });
+    if (!user || !(await user.comparePassword(password))) {
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     const token = jwt.sign(
-      { 
-        userId: staff._id,
-        username: staff.username,
-        rank: staff.rank
-      },
+      { userId: user._id, username: user.username, rank: user.rank },
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
 
-    res.json({
-      message: 'Login successful',
-      token: token,
-      user: {
-        username: staff.username,
-        rank: staff.rank
-      }
-    });
-
+    res.json({ token, user: { username: user.username, rank: user.rank } });
   } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ error: 'Server error during login.' });
+    res.status(500).json({ error: 'Server error' });
   }
 });
 

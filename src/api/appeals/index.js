@@ -1,93 +1,52 @@
 const express = require('express');
-const router = express.Router();
 const Appeal = require('../../database/models/Appeal');
-const authMiddleware = require('../../middleware/auth');
-const permissions = require('../../middleware/permissions');
+const auth = require('../../middleware/auth');
+const perms = require('../../middleware/permissions');
+const router = express.Router();
 
-// Submit appeal (public — no auth)
+// Public POST (submit appeal)
 router.post('/', async (req, res) => {
   try {
-    const { type, username, discordTag, reason, explanation, evidence } = req.body;
-
-    if (!type || !username || !discordTag || !reason || !explanation) {
-      return res.status(400).json({ error: 'All fields except evidence are required.' });
+    const { username, discordId, type, reason, explanation } = req.body;
+    if (!username || !discordId || !type || !reason || !explanation) {
+      return res.status(400).json({ error: 'All fields required' });
     }
-
-    const appeal = new Appeal({
-      type,
-      username,
-      discordTag,
-      reason,
-      explanation,
-      evidence: evidence || '',
-      status: 'Pending'
-    });
-
+    const appeal = new Appeal({ username, discordId, type, reason, explanation });
     await appeal.save();
-
-    res.json({
-      message: 'Appeal submitted successfully',
-      appeal: {
-        id: appeal._id,
-        type: appeal.type,
-        status: appeal.status
-      }
-    });
-
+    res.status(201).json({ message: 'Submitted', appeal });
   } catch (error) {
-    console.error('Submit appeal error:', error);
-    res.status(500).json({ error: 'Server error submitting appeal.' });
+    res.status(500).json({ error: 'Failed to submit' });
   }
 });
 
-// List all appeals (Captain+)
-router.get('/review', authMiddleware, permissions('Captain'), async (req, res) => {
+// Protected GET (review appeals)
+router.get('/', auth, perms('Captain'), async (req, res) => {
   try {
-    const appeals = await Appeal.find().sort({ createdAt: -1 });
-    res.json({ appeals });
+    const filter = req.query.status ? { status: req.query.status } : {};
+    const appeals = await Appeal.find(filter).sort({ createdAt: -1 });
+    res.json(appeals);
   } catch (error) {
-    res.status(500).json({ error: 'Server error fetching appeals.' });
+    res.status(500).json({ error: 'Failed to fetch' });
   }
 });
 
-// Review/approve/deny appeal (Captain+)
-router.post('/review/:id', authMiddleware, permissions('Captain'), async (req, res) => {
+// Protected PUT (review appeal)
+router.put('/:id', auth, perms('Captain'), async (req, res) => {
   try {
-    const { id } = req.params;
     const { status, reviewNote } = req.body;
-    const reviewer = req.user.username;
-
+    const { username } = req.user;
     if (!status || !['Approved', 'Denied'].includes(status)) {
-      return res.status(400).json({ error: 'Status must be Approved or Denied.' });
+      return res.status(400).json({ error: 'Invalid status' });
     }
-
-    const appeal = await Appeal.findById(id);
-    if (!appeal) {
-      return res.status(404).json({ error: 'Appeal not found.' });
-    }
-
-    if (appeal.status !== 'Pending') {
-      return res.status(400).json({ error: 'This appeal has already been reviewed.' });
-    }
-
+    const appeal = await Appeal.findById(req.params.id);
+    if (!appeal) return res.status(404).json({ error: 'Not found' });
     appeal.status = status;
-    appeal.reviewedBy = reviewer;
+    appeal.reviewedBy = username;
     appeal.reviewNote = reviewNote || '';
-    appeal.reviewedAt = new Date();
     await appeal.save();
-
-    res.json({
-      message: `Appeal ${status.toLowerCase()}`,
-      appeal: {
-        id: appeal._id,
-        status: appeal.status,
-        reviewedBy: appeal.reviewedBy
-      }
-    });
-
+    res.json({ message: 'Reviewed', appeal });
   } catch (error) {
-    console.error('Review appeal error:', error);
-    res.status(500).json({ error: 'Server error reviewing appeal.' });
+    res.status(500).json({ error: 'Failed to review' });
   }
 });
 

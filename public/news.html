@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Announcements | Clover Kingdom</title>
+  <title>News | Clover Kingdom</title>
   <link rel="icon" type="image/png" href="/assets/favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
   <style>
@@ -12,7 +12,6 @@
     #particles-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes slideIn { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
-    @keyframes spin { to { transform: rotate(360deg); } }
     .sidebar { position: fixed; top: 0; left: -320px; width: 320px; height: 100vh; background: #111; border-right: 1px solid #222; z-index: 1000; transition: left 0.4s cubic-bezier(0.4,0,0.2,1); padding: 2rem; }
     .sidebar.open { left: 0; }
     .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 999; opacity: 0; visibility: hidden; transition: all 0.3s; }
@@ -31,12 +30,7 @@
     .menu-btn.active span:nth-child(3) { transform: rotate(-45deg) translate(6px,-6px); }
     .content { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; padding: 8rem 2rem 4rem; }
     .content h1 { font-family: 'Cinzel', serif; font-size: clamp(2rem,5vw,3rem); margin-bottom: 3rem; text-align: center; letter-spacing: 0.1em; }
-    .announcement-item { padding: 2rem 0; border-bottom: 1px solid #1a1a1a; animation: slideIn 0.6s ease-out forwards; opacity: 0; }
-    .announcement-item h3 { font-family: 'Cinzel', serif; font-size: 1.3rem; margin-bottom: 0.8rem; }
-    .announcement-item p { color: #aaa; line-height: 1.8; margin-bottom: 1rem; }
-    .announcement-meta { font-size: 0.75rem; color: #555; text-transform: uppercase; letter-spacing: 0.1em; }
-    .no-items { text-align: center; color: #555; padding: 4rem 0; font-style: italic; }
-    .spinner { width: 40px; height: 40px; border: 2px solid #222; border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 2rem auto; }
+    .no-items { text-align: center; color: #555; padding: 4rem 0; font-style: italic; animation: fadeIn 0.8s ease-out forwards; }
     footer { border-top: 1px solid #1a1a1a; padding: 3rem 2rem; text-align: center; position: relative; z-index: 1; }
     .discord-link { display: inline-flex; align-items: center; gap: 0.5rem; color: #888; text-decoration: none; font-size: 0.85rem; transition: all 0.3s; }
     .discord-link:hover { color: #fff; }
@@ -53,8 +47,8 @@
     <div class="sidebar-header"><h2>Clover Kingdom</h2><small>Official Portal</small></div>
     <nav class="sidebar-nav">
       <a href="/index.html">Home</a>
-      <a href="/announcements.html" class="active">Announcements</a>
-      <a href="/news.html">News</a>
+      <a href="/announcements.html">Announcements</a>
+      <a href="/news.html" class="active">News</a>
       <a href="/events.html">Events</a>
       <a href="/appeals.html">Appeals</a>
       <a href="/src/dashboard/login.html" id="staff-nav-link" style="display:none;">Staff Panel</a>
@@ -62,8 +56,8 @@
   </aside>
   <button class="menu-btn" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
   <div class="content">
-    <h1>Announcements</h1>
-    <div id="announcements-list"><div class="spinner"></div></div>
+    <h1>Kingdom News</h1>
+    <p class="no-items">No news at this time.</p>
   </div>
   <footer>
     <a href="https://discord.gg/BaCFgcyTrt" class="discord-link">
@@ -76,8 +70,6 @@
     const canvas=document.getElementById('particles-canvas');const ctx=canvas.getContext('2d');canvas.width=window.innerWidth;canvas.height=window.innerHeight;const particles=[];for(let i=0;i<50;i++)particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,size:Math.random()*2+0.5,speedX:Math.random()*0.5-0.25,speedY:Math.random()*0.5-0.25,opacity:Math.random()*0.5+0.1});function animate(){ctx.clearRect(0,0,canvas.width,canvas.height);particles.forEach(p=>{p.x+=p.speedX;p.y+=p.speedY;if(p.x>canvas.width)p.x=0;if(p.x<0)p.x=canvas.width;if(p.y>canvas.height)p.y=0;if(p.y<0)p.y=canvas.height;ctx.fillStyle=`rgba(255,255,255,${p.opacity})`;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();});requestAnimationFrame(animate);}animate();window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
     function toggleSidebar(){document.querySelector('.sidebar').classList.toggle('open');document.querySelector('.sidebar-overlay').classList.toggle('active');document.querySelector('.menu-btn').classList.toggle('active');}
     if(localStorage.getItem('token'))document.getElementById('staff-nav-link').style.display='block';
-    async function load(){try{const res=await fetch('/api/announcements');const data=await res.json();const el=document.getElementById('announcements-list');if(data&&data.length>0){el.innerHTML=data.map((a,i)=>`<div class="announcement-item" style="animation-delay:${i*0.1}s"><h3>${a.title}</h3><p>${a.content}</p><div class="announcement-meta">Posted by <span>${a.author}</span> — ${a.authorRank} — ${new Date(a.createdAt).toLocaleDateString()}</div></div>`).join('');}else{el.innerHTML='<p class="no-items">No announcements at this time.</p>';}}catch{document.getElementById('announcements-list').innerHTML='<p class="no-items">No announcements at this time.</p>';}}
-    load();
   </script>
 </body>
 </html>
