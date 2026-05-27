@@ -286,7 +286,35 @@ function loadEvents() {
     const container = document.getElementById('eventsContainer');
     if (!container) return;
     
-    const events = JSON.parse(localStorage.getItem('ck_events') || '[]');
+    let events = JSON.parse(localStorage.getItem('ck_events') || '[]');
+    
+    // Add demo events if empty (with fixed IDs so they're deletable)
+    if (events.length === 0) {
+        events = [
+            {
+                name: 'Magic Knight Tournament',
+                date: '2026-06-15',
+                desc: 'Compete against the strongest mages in the kingdom. Grand prize: Royal Grimoire.',
+                type: 'tournament',
+                id: 2001
+            },
+            {
+                name: 'Beast Hunt Quest',
+                date: '2026-06-22',
+                desc: 'Join a squad to track and subdue magical beasts threatening nearby villages.',
+                type: 'quest',
+                id: 2002
+            },
+            {
+                name: 'Kingdom Festival',
+                date: '2026-07-01',
+                desc: 'Celebrate the founding of Clover Kingdom with games, food, and magic displays.',
+                type: 'festival',
+                id: 2003
+            }
+        ];
+        localStorage.setItem('ck_events', JSON.stringify(events));
+    }
     
     if (events.length === 0) {
         container.innerHTML = '<p style="color:var(--text-dark);text-align:center;">No events yet. Create one above!</p>';
@@ -311,6 +339,8 @@ function loadEvents() {
 }
 
 function deleteEvent(id) {
+    if (!confirm('Are you sure you want to delete this event?')) return;
+    
     let events = JSON.parse(localStorage.getItem('ck_events') || '[]');
     events = events.filter(e => e.id !== id);
     localStorage.setItem('ck_events', JSON.stringify(events));
@@ -328,7 +358,8 @@ if (announcementForm) {
         const title = document.getElementById('announceTitle').value;
         const message = document.getElementById('announceMessage').value;
         const priority = document.getElementById('announcePriority').value;
-        const webhookUrl = document.getElementById('webhookUrl').value || DISCORD_WEBHOOK_URL || localStorage.getItem('ck_discord_webhook') || '';
+        const sendToDiscord = document.getElementById('sendToDiscord').checked;
+        const webhookUrl = localStorage.getItem('ck_discord_webhook') || DISCORD_WEBHOOK_URL || '';
         
         const announcements = JSON.parse(localStorage.getItem('ck_announcements') || '[]');
         announcements.unshift({ 
@@ -340,18 +371,22 @@ if (announcementForm) {
         });
         localStorage.setItem('ck_announcements', JSON.stringify(announcements));
         
-        if (webhookUrl) {
+        if (sendToDiscord && webhookUrl) {
             try {
                 await sendToDiscord(webhookUrl, title, message, priority);
                 alert('Announcement posted to website and Discord!');
             } catch (err) {
                 alert('Saved to website but Discord webhook failed. Check your URL.');
             }
+        } else if (sendToDiscord && !webhookUrl) {
+            alert('Announcement saved to website! (No webhook configured - save one above)');
         } else {
-            alert('Announcement posted to website! (No Discord webhook set)');
+            alert('Announcement posted to website only!');
         }
         
         announcementForm.reset();
+        // Re-check the checkbox after reset (keep it unchecked by default)
+        document.getElementById('sendToDiscord').checked = false;
         loadAnnouncements();
     });
 }
