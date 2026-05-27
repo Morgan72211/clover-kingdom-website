@@ -14,6 +14,7 @@ function loadAccountsConfig() {
                 rank: "Owner",
                 displayName: "Suki"
             }
+        },
         ranks: {
             "Vice Captain": { level: 1, color: "#7f8c8d" },
             "Captain": { level: 2, color: "#95a5a6" },
