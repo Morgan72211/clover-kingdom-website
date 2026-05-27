@@ -106,7 +106,7 @@ function getRankLevel(rank) {
 // ============================================
 // DISCORD WEBHOOK
 // ============================================
-
+console.log("TEST")
 const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1366958369926660196/EXAMPLE_TOKEN';
 
 async function sendToDiscord(webhookUrl, title, message, priority) {
