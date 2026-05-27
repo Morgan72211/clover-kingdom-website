@@ -2,13 +2,11 @@
 // ACCOUNTS CONFIG - EDIT THIS SECTION ONLY
 // ============================================
 
-// Load accounts from localStorage or use defaults
 function loadAccountsConfig() {
     const saved = localStorage.getItem('ck_accounts_config');
     if (saved) {
         return JSON.parse(saved);
     }
-    // Default config
     return {
         users: {
             "Suki": {
@@ -27,20 +25,98 @@ function loadAccountsConfig() {
     };
 }
 
-// Save accounts to localStorage
 function saveAccountsConfig() {
     localStorage.setItem('ck_accounts_config', JSON.stringify(ACCOUNTS_CONFIG));
 }
 
-// Initialize config
 let ACCOUNTS_CONFIG = loadAccountsConfig();
 
 // ============================================
+// SESSION UTILS
+// ============================================
 
-// ===== DISCORD WEBHOOK URL (DEFAULT - CHANGE THIS) =====
-const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1366958369926660196/EXAMPLE_TOKEN'; // <-- PUT YOUR REAL WEBHOOK HERE
+function getUsers() {
+    const config = loadAccountsConfig();
+    return config.users || {};
+}
 
-// ===== LOGIN FORM =====
+function getSession() {
+    const session = localStorage.getItem('ck_session');
+    if (!session) return null;
+    try {
+        return JSON.parse(session);
+    } catch {
+        return null;
+    }
+}
+
+function setSession(user) {
+    const config = loadAccountsConfig();
+    const rankData = config.ranks[user.rank] || { level: 0, color: '#888' };
+    const username = Object.keys(config.users).find(k => config.users[k] === user) || user.displayName;
+    localStorage.setItem('ck_session', JSON.stringify({
+        username: username,
+        rank: user.rank,
+        level: rankData.level,
+        color: rankData.color,
+        displayName: user.displayName
+    }));
+}
+
+function clearSession() {
+    localStorage.removeItem('ck_session');
+}
+
+function getRankColor(rank) {
+    const config = loadAccountsConfig();
+    return (config.ranks[rank] || {}).color || '#888';
+}
+
+function getRankLevel(rank) {
+    const config = loadAccountsConfig();
+    return (config.ranks[rank] || {}).level || 0;
+}
+
+// ============================================
+// DISCORD WEBHOOK
+// ============================================
+
+const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1366958369926660196/EXAMPLE_TOKEN';
+
+async function sendToDiscord(webhookUrl, title, message, priority) {
+    const colors = {
+        normal: 0x888888,
+        important: 0xf39c12,
+        urgent: 0xe74c3c
+    };
+    
+    const payload = {
+        embeds: [{
+            title: '📢 ' + title,
+            description: message,
+            color: colors[priority] || colors.normal,
+            footer: { text: 'Clover Kingdom Announcements' },
+            timestamp: new Date().toISOString()
+        }]
+    };
+    
+    const response = await fetch('/api/send-announcement', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ webhookUrl: webhookUrl, payload: payload })
+    });
+    
+    if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Server error: ' + response.status);
+    }
+    return response;
+}
+
+// ============================================
+// LOGIN
+// ============================================
+
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
     loginForm.addEventListener('submit', function(e) {
@@ -64,7 +140,10 @@ if (loginForm) {
     });
 }
 
-// ===== LOGOUT =====
+// ============================================
+// LOGOUT
+// ============================================
+
 const logoutBtn = document.getElementById('logoutBtn');
 if (logoutBtn) {
     logoutBtn.addEventListener('click', function(e) {
@@ -74,7 +153,10 @@ if (logoutBtn) {
     });
 }
 
-// ===== UPDATE NAV BASED ON AUTH =====
+// ============================================
+// NAV & AUTH
+// ============================================
+
 function updateAuthNav() {
     const authLink = document.getElementById('auth-link');
     if (!authLink) return;
@@ -89,7 +171,52 @@ function updateAuthNav() {
     }
 }
 
-// ===== INIT SIDEBAR RANK BADGE =====
+// ============================================
+// SIDEBAR
+// ============================================
+
+const sidebar = document.getElementById('sidebar');
+const sidebarToggle = document.getElementById('sidebarToggle');
+const mainContent = document.getElementById('mainContent');
+const footer = document.getElementById('footer');
+const dashboardMain = document.querySelector('.dashboard-main');
+
+let sidebarOpen = false;
+
+function toggleSidebar() {
+    sidebarOpen = !sidebarOpen;
+    
+    if (sidebarOpen) {
+        sidebar.classList.remove('collapsed');
+        if (sidebarToggle) {
+            sidebarToggle.classList.add('shifted');
+            sidebarToggle.classList.add('active');
+        }
+    } else {
+        sidebar.classList.add('collapsed');
+        if (sidebarToggle) {
+            sidebarToggle.classList.remove('shifted');
+            sidebarToggle.classList.remove('active');
+        }
+    }
+    
+    if (mainContent) {
+        mainContent.classList.toggle('expanded', !sidebarOpen);
+    }
+    
+    if (footer) {
+        footer.classList.toggle('expanded', !sidebarOpen);
+    }
+    
+    if (dashboardMain) {
+        dashboardMain.classList.toggle('expanded', !sidebarOpen);
+    }
+}
+
+if (sidebarToggle) {
+    sidebarToggle.addEventListener('click', toggleSidebar);
+}
+
 function initSidebarRank() {
     const session = getSession();
     if (!session) return;
@@ -131,7 +258,14 @@ function initSidebarRank() {
     }
 }
 
-// ===== DASHBOARD =====
+if (document.getElementById('adminLinks')) {
+    initSidebarRank();
+}
+
+// ============================================
+// DASHBOARD
+// ============================================
+
 function initDashboard() {
     const session = getSession();
     if (!session) {
@@ -153,7 +287,6 @@ function initDashboard() {
     }
     if (userName) userName.textContent = session.username;
     
-    // Load real stats
     loadDashboardStats();
     
     const quickActions = document.getElementById('quickActions');
@@ -188,9 +321,8 @@ function loadDashboardStats() {
     const appeals = JSON.parse(localStorage.getItem('ck_appeals') || '[]');
     
     const totalStaff = Object.keys(users).length;
-    const activeStaff = totalStaff;
-    const pendingApps = apps.filter(a => a.status === 'pending').length;
-    const pendingAppeals = appeals.filter(a => a.status === 'pending').length;
+    const pendingApps = apps.filter(function(a) { return a.status === 'pending'; }).length;
+    const pendingAppeals = appeals.filter(function(a) { return a.status === 'pending'; }).length;
     
     const totalStaffEl = document.getElementById('dashTotalStaff');
     const activeStaffEl = document.getElementById('dashActiveStaff');
@@ -198,7 +330,7 @@ function loadDashboardStats() {
     const pendingAppealsEl = document.getElementById('dashPendingAppeals');
     
     if (totalStaffEl) totalStaffEl.textContent = totalStaff;
-    if (activeStaffEl) activeStaffEl.textContent = activeStaff;
+    if (activeStaffEl) activeStaffEl.textContent = totalStaff;
     if (pendingAppsEl) pendingAppsEl.textContent = pendingApps;
     if (pendingAppealsEl) pendingAppealsEl.textContent = pendingAppeals;
 }
@@ -207,11 +339,10 @@ if (document.body.classList.contains('dashboard-body')) {
     initDashboard();
 }
 
-if (document.getElementById('adminLinks')) {
-    initSidebarRank();
-}
+// ============================================
+// EVENTS
+// ============================================
 
-// ===== MANAGE EVENTS =====
 const eventForm = document.getElementById('eventForm');
 if (eventForm) {
     loadEvents();
@@ -225,7 +356,7 @@ if (eventForm) {
         const type = document.getElementById('eventType').value;
         
         const events = JSON.parse(localStorage.getItem('ck_events') || '[]');
-        events.push({ name, date, desc, type, id: Date.now() });
+        events.push({ name: name, date: date, desc: desc, type: type, id: Date.now() });
         localStorage.setItem('ck_events', JSON.stringify(events));
         
         alert('Event created successfully!');
@@ -240,30 +371,11 @@ function loadEvents() {
     
     let events = JSON.parse(localStorage.getItem('ck_events') || '[]');
     
-    // Add demo events if empty (with fixed IDs so they're deletable)
     if (events.length === 0) {
         events = [
-            {
-                name: 'Magic Knight Tournament',
-                date: '2026-06-15',
-                desc: 'Compete against the strongest mages in the kingdom. Grand prize: Royal Grimoire.',
-                type: 'tournament',
-                id: 2001
-            },
-            {
-                name: 'Beast Hunt Quest',
-                date: '2026-06-22',
-                desc: 'Join a squad to track and subdue magical beasts threatening nearby villages.',
-                type: 'quest',
-                id: 2002
-            },
-            {
-                name: 'Kingdom Festival',
-                date: '2026-07-01',
-                desc: 'Celebrate the founding of Clover Kingdom with games, food, and magic displays.',
-                type: 'festival',
-                id: 2003
-            }
+            { name: 'Magic Knight Tournament', date: '2026-06-15', desc: 'Compete against the strongest mages in the kingdom. Grand prize: Royal Grimoire.', type: 'tournament', id: 2001 },
+            { name: 'Beast Hunt Quest', date: '2026-06-22', desc: 'Join a squad to track and subdue magical beasts threatening nearby villages.', type: 'quest', id: 2002 },
+            { name: 'Kingdom Festival', date: '2026-07-01', desc: 'Celebrate the founding of Clover Kingdom with games, food, and magic displays.', type: 'festival', id: 2003 }
         ];
         localStorage.setItem('ck_events', JSON.stringify(events));
     }
@@ -274,16 +386,14 @@ function loadEvents() {
     }
     
     let html = '<div class="cards-grid">';
-    events.forEach(event => {
-        html += `
-            <div class="card" style="text-align:left;">
-                <div style="color:var(--gold);font-size:0.85rem;text-transform:uppercase;letter-spacing:2px;margin-bottom:0.5rem;">${event.type}</div>
-                <h3 style="margin-bottom:0.5rem;">${event.name}</h3>
-                <p style="color:var(--text-dark);font-size:0.9rem;margin-bottom:1rem;">${event.desc}</p>
-                <div style="color:var(--gold);font-size:0.85rem;">📅 ${event.date}</div>
-                <button onclick="deleteEvent(${event.id})" style="margin-top:1rem;background:#e74c3c;color:white;border:none;padding:0.5rem 1rem;border-radius:6px;cursor:pointer;font-family:'Cinzel',serif;">Delete</button>
-            </div>
-        `;
+    events.forEach(function(event) {
+        html += '<div class="card" style="text-align:left;">';
+        html += '<div style="color:var(--gold);font-size:0.85rem;text-transform:uppercase;letter-spacing:2px;margin-bottom:0.5rem;">' + event.type + '</div>';
+        html += '<h3 style="margin-bottom:0.5rem;">' + event.name + '</h3>';
+        html += '<p style="color:var(--text-dark);font-size:0.9rem;margin-bottom:1rem;">' + event.desc + '</p>';
+        html += '<div style="color:var(--gold);font-size:0.85rem;">📅 ' + event.date + '</div>';
+        html += '<button onclick="deleteEvent(' + event.id + ')" style="margin-top:1rem;background:#e74c3c;color:white;border:none;padding:0.5rem 1rem;border-radius:6px;cursor:pointer;font-family:Cinzel,serif;">Delete</button>';
+        html += '</div>';
     });
     html += '</div>';
     
@@ -294,12 +404,15 @@ function deleteEvent(id) {
     if (!confirm('Are you sure you want to delete this event?')) return;
     
     let events = JSON.parse(localStorage.getItem('ck_events') || '[]');
-    events = events.filter(e => e.id !== id);
+    events = events.filter(function(e) { return e.id !== id; });
     localStorage.setItem('ck_events', JSON.stringify(events));
     loadEvents();
 }
 
-// ===== MANAGE ANNOUNCEMENTS (SINGLE HANDLER - FIXED) =====
+// ============================================
+// ANNOUNCEMENTS
+// ============================================
+
 const announcementForm = document.getElementById('announcementForm');
 if (announcementForm) {
     loadAnnouncements();
@@ -315,9 +428,9 @@ if (announcementForm) {
         
         const announcements = JSON.parse(localStorage.getItem('ck_announcements') || '[]');
         announcements.unshift({ 
-            title, 
-            message, 
-            priority, 
+            title: title, 
+            message: message, 
+            priority: priority, 
             date: new Date().toLocaleDateString(),
             id: Date.now() 
         });
@@ -337,71 +450,9 @@ if (announcementForm) {
         }
         
         announcementForm.reset();
-        // Re-check the checkbox after reset (keep it unchecked by default)
         document.getElementById('sendToDiscord').checked = false;
         loadAnnouncements();
     });
-}
-
-// ===== SEND TO DISCORD (PROXY THROUGH SERVER) =====
-async function sendToDiscord(webhookUrl, title, message, priority) {
-    const colors = {
-        normal: 0x888888,
-        important: 0xf39c12,
-        urgent: 0xe74c3c
-    };
-    
-    const payload = {
-        embeds: [{
-            title: `📢 ${title}`,
-            description: message,
-            color: colors[priority] || colors.normal,
-            footer: { text: 'Clover Kingdom Announcements' },
-            timestamp: new Date().toISOString()
-        }]
-    };
-    
-    // Send to YOUR server instead of Discord directly (avoids CORS)
-    const response = await fetch('/api/send-announcement', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ webhookUrl, payload })
-    });
-    
-    if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(errText || `Server error: ${response.status}`);
-    }
-    return response;
-}
-
-// ===== DIRECT DISCORD CALL (FOR TESTING - WILL FAIL DUE TO CORS IN BROWSER) =====
-// Only use this if you're running in an environment without CORS (like Node.js or a browser extension)
-async function sendToDiscordDirect(webhookUrl, title, message, priority) {
-    const colors = {
-        normal: 0x888888,
-        important: 0xf39c12,
-        urgent: 0xe74c3c
-    };
-    
-    const payload = {
-        embeds: [{
-            title: `📢 ${title}`,
-            description: message,
-            color: colors[priority] || colors.normal,
-            footer: { text: 'Clover Kingdom Announcements' },
-            timestamp: new Date().toISOString()
-        }]
-    };
-    
-    const response = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    });
-    
-    if (!response.ok) throw new Error('Webhook failed');
-    return response;
 }
 
 function loadAnnouncements() {
@@ -410,30 +461,11 @@ function loadAnnouncements() {
     
     let announcements = JSON.parse(localStorage.getItem('ck_announcements') || '[]');
     
-    // Add default announcements if empty (with fixed IDs so they're deletable)
     if (announcements.length === 0) {
         announcements = [
-            {
-                title: 'Welcome to the New Kingdom!',
-                message: 'The Clover Kingdom website has officially launched! Explore our magical realm and join us on this journey.',
-                priority: 'important',
-                date: 'May 25, 2026',
-                id: 1001
-            },
-            {
-                title: 'Magic Knight Exams',
-                message: 'Applications for the next Magic Knight squad entrance exam are now open. Prepare your grimoires!',
-                priority: 'normal',
-                date: 'May 20, 2026',
-                id: 1002
-            },
-            {
-                title: 'Server Updates',
-                message: 'New spells added to the grimoire system. Check the events page for details on upcoming training sessions.',
-                priority: 'normal',
-                date: 'May 15, 2026',
-                id: 1003
-            }
+            { title: 'Welcome to the New Kingdom!', message: 'The Clover Kingdom website has officially launched! Explore our magical realm and join us on this journey.', priority: 'important', date: 'May 25, 2026', id: 1001 },
+            { title: 'Magic Knight Exams', message: 'Applications for the next Magic Knight squad entrance exam are now open. Prepare your grimoires!', priority: 'normal', date: 'May 20, 2026', id: 1002 },
+            { title: 'Server Updates', message: 'New spells added to the grimoire system. Check the events page for details on upcoming training sessions.', priority: 'normal', date: 'May 15, 2026', id: 1003 }
         ];
         localStorage.setItem('ck_announcements', JSON.stringify(announcements));
     }
@@ -444,19 +476,17 @@ function loadAnnouncements() {
     }
     
     let html = '';
-    announcements.forEach(ann => {
+    announcements.forEach(function(ann) {
         const priorityColor = ann.priority === 'urgent' ? '#e74c3c' : ann.priority === 'important' ? '#f39c12' : 'var(--gold)';
-        html += `
-            <div class="announcement-card" style="margin-bottom:1rem;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
-                    <span style="color:${priorityColor};font-size:0.75rem;text-transform:uppercase;letter-spacing:2px;">${ann.priority}</span>
-                    <span style="color:var(--text-dark);font-size:0.8rem;">${ann.date}</span>
-                </div>
-                <h3 style="margin-bottom:0.5rem;">${ann.title}</h3>
-                <p style="color:var(--text-dark);">${ann.message}</p>
-                <button onclick="deleteAnnouncement(${ann.id})" style="margin-top:1rem;background:#e74c3c;color:white;border:none;padding:0.5rem 1rem;border-radius:6px;cursor:pointer;font-family:'Cinzel',serif;">Delete</button>
-            </div>
-        `;
+        html += '<div class="announcement-card" style="margin-bottom:1rem;">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">';
+        html += '<span style="color:' + priorityColor + ';font-size:0.75rem;text-transform:uppercase;letter-spacing:2px;">' + ann.priority + '</span>';
+        html += '<span style="color:var(--text-dark);font-size:0.8rem;">' + ann.date + '</span>';
+        html += '</div>';
+        html += '<h3 style="margin-bottom:0.5rem;">' + ann.title + '</h3>';
+        html += '<p style="color:var(--text-dark);">' + ann.message + '</p>';
+        html += '<button onclick="deleteAnnouncement(' + ann.id + ')" style="margin-top:1rem;background:#e74c3c;color:white;border:none;padding:0.5rem 1rem;border-radius:6px;cursor:pointer;font-family:Cinzel,serif;">Delete</button>';
+        html += '</div>';
     });
     
     container.innerHTML = html;
@@ -466,12 +496,15 @@ function deleteAnnouncement(id) {
     if (!confirm('Are you sure you want to delete this announcement?')) return;
     
     let announcements = JSON.parse(localStorage.getItem('ck_announcements') || '[]');
-    announcements = announcements.filter(a => a.id !== id);
+    announcements = announcements.filter(function(a) { return a.id !== id; });
     localStorage.setItem('ck_announcements', JSON.stringify(announcements));
     loadAnnouncements();
 }
 
-// ===== REVIEW APPLICATIONS =====
+// ============================================
+// APPLICATIONS
+// ============================================
+
 let currentAppFilter = 'all';
 
 function loadApplications(filter) {
@@ -480,49 +513,43 @@ function loadApplications(filter) {
     
     if (filter) currentAppFilter = filter;
     
-    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.filter-btn').forEach(function(btn) { btn.classList.remove('active'); });
     const activeBtn = document.getElementById('filter-' + currentAppFilter);
     if (activeBtn) activeBtn.classList.add('active');
     
     let apps = JSON.parse(localStorage.getItem('ck_applications') || '[]');
     
     if (currentAppFilter !== 'all') {
-        apps = apps.filter(app => app.status === currentAppFilter);
+        apps = apps.filter(function(app) { return app.status === currentAppFilter; });
     }
     
     if (apps.length === 0) {
-        container.innerHTML = `
-            <div class="announcement-card" style="text-align:center;padding:3rem;">
-                <p style="color:var(--text-dark);font-size:1.1rem;">No ${currentAppFilter !== 'all' ? currentAppFilter + ' ' : ''}applications.</p>
-            </div>
-        `;
+        container.innerHTML = '<div class="announcement-card" style="text-align:center;padding:3rem;"><p style="color:var(--text-dark);font-size:1.1rem;">No ' + (currentAppFilter !== 'all' ? currentAppFilter + ' ' : '') + 'applications.</p></div>';
         return;
     }
     
     let html = '';
-    apps.forEach(app => {
+    apps.forEach(function(app) {
         const statusColor = app.status === 'approved' ? '#2ecc71' : app.status === 'denied' ? '#e74c3c' : 'var(--gold)';
-        html += `
-            <div class="announcement-card" style="margin-bottom:1rem;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-                    <div>
-                        <h3 style="margin-bottom:0.3rem;">${app.name}</h3>
-                        <span style="color:var(--text-dark);font-size:0.85rem;">${app.type} • ${app.date}</span>
-                    </div>
-                    <span style="color:${statusColor};font-size:0.8rem;text-transform:uppercase;letter-spacing:2px;padding:0.3rem 0.8rem;border:1px solid ${statusColor};border-radius:20px;">${app.status}</span>
-                </div>
-                <p style="color:var(--text-dark);margin-bottom:0.5rem;"><strong>Discord:</strong> ${app.discord}</p>
-                <p style="color:var(--text-dark);margin-bottom:0.5rem;"><strong>Reason:</strong> ${app.reason}</p>
-                <p style="color:var(--text-dark);margin-bottom:1rem;"><strong>Experience:</strong> ${app.experience}</p>
-                ${app.createdBy ? `<p style="color:var(--text-dark);font-size:0.8rem;margin-bottom:1rem;">Created by: ${app.createdBy}</p>` : ''}
-                ${app.status === 'pending' ? `
-                    <div style="display:flex;gap:0.5rem;">
-                        <button onclick="updateAppStatus(${app.id}, 'approved')" style="background:#2ecc71;color:white;border:none;padding:0.5rem 1rem;border-radius:6px;cursor:pointer;font-family:'Cinzel',serif;">Approve</button>
-                        <button onclick="updateAppStatus(${app.id}, 'denied')" style="background:#e74c3c;color:white;border:none;padding:0.5rem 1rem;border-radius:6px;cursor:pointer;font-family:'Cinzel',serif;">Deny</button>
-                    </div>
-                ` : ''}
-            </div>
-        `;
+        html += '<div class="announcement-card" style="margin-bottom:1rem;">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">';
+        html += '<div><h3 style="margin-bottom:0.3rem;">' + app.name + '</h3>';
+        html += '<span style="color:var(--text-dark);font-size:0.85rem;">' + app.type + ' • ' + app.date + '</span></div>';
+        html += '<span style="color:' + statusColor + ';font-size:0.8rem;text-transform:uppercase;letter-spacing:2px;padding:0.3rem 0.8rem;border:1px solid ' + statusColor + ';border-radius:20px;">' + app.status + '</span>';
+        html += '</div>';
+        html += '<p style="color:var(--text-dark);margin-bottom:0.5rem;"><strong>Discord:</strong> ' + app.discord + '</p>';
+        html += '<p style="color:var(--text-dark);margin-bottom:0.5rem;"><strong>Reason:</strong> ' + app.reason + '</p>';
+        html += '<p style="color:var(--text-dark);margin-bottom:1rem;"><strong>Experience:</strong> ' + app.experience + '</p>';
+        if (app.createdBy) {
+            html += '<p style="color:var(--text-dark);font-size:0.8rem;margin-bottom:1rem;">Created by: ' + app.createdBy + '</p>';
+        }
+        if (app.status === 'pending') {
+            html += '<div style="display:flex;gap:0.5rem;">';
+            html += '<button onclick="updateAppStatus(' + app.id + ', \'approved\')" style="background:#2ecc71;color:white;border:none;padding:0.5rem 1rem;border-radius:6px;cursor:pointer;font-family:Cinzel,serif;">Approve</button>';
+            html += '<button onclick="updateAppStatus(' + app.id + ', \'denied\')" style="background:#e74c3c;color:white;border:none;padding:0.5rem 1rem;border-radius:6px;cursor:pointer;font-family:Cinzel,serif;">Deny</button>';
+            html += '</div>';
+        }
+        html += '</div>';
     });
     
     container.innerHTML = html;
@@ -534,7 +561,7 @@ function filterApps(filter) {
 
 function updateAppStatus(id, status) {
     let apps = JSON.parse(localStorage.getItem('ck_applications') || '[]');
-    const app = apps.find(a => a.id === id);
+    const app = apps.find(function(a) { return a.id === id; });
     if (app) app.status = status;
     localStorage.setItem('ck_applications', JSON.stringify(apps));
     loadApplications();
@@ -544,7 +571,10 @@ if (document.getElementById('applicationsContainer')) {
     loadApplications();
 }
 
-// ===== REVIEW APPEALS =====
+// ============================================
+// APPEALS
+// ============================================
+
 let currentAppealFilter = 'all';
 
 function loadAppeals(filter) {
@@ -553,7 +583,7 @@ function loadAppeals(filter) {
     
     if (filter) currentAppealFilter = filter;
     
-    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.filter-btn').forEach(function(btn) { btn.classList.remove('active'); });
     const activeBtn = document.getElementById('filter-' + currentAppealFilter);
     if (activeBtn) activeBtn.classList.add('active');
     
@@ -572,40 +602,32 @@ function loadAppeals(filter) {
     }
     
     if (currentAppealFilter !== 'all') {
-        appeals = appeals.filter(a => a.status === currentAppealFilter);
+        appeals = appeals.filter(function(a) { return a.status === currentAppealFilter; });
     }
     
     if (appeals.length === 0) {
-        container.innerHTML = `
-            <div class="announcement-card" style="text-align:center;padding:3rem;">
-                <p style="color:var(--text-dark);font-size:1.1rem;">No ${currentAppealFilter !== 'all' ? currentAppealFilter + ' ' : ''}appeals.</p>
-            </div>
-        `;
+        container.innerHTML = '<div class="announcement-card" style="text-align:center;padding:3rem;"><p style="color:var(--text-dark);font-size:1.1rem;">No ' + (currentAppealFilter !== 'all' ? currentAppealFilter + ' ' : '') + 'appeals.</p></div>';
         return;
     }
     
     let html = '';
-    appeals.forEach(appeal => {
+    appeals.forEach(function(appeal) {
         const statusColor = appeal.status === 'approved' ? '#2ecc71' : appeal.status === 'denied' ? '#e74c3c' : 'var(--gold)';
         const typeLabel = appeal.type.charAt(0).toUpperCase() + appeal.type.slice(1);
-        html += `
-            <div class="announcement-card" style="margin-bottom:1rem;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-                    <div>
-                        <h3 style="margin-bottom:0.3rem;">${typeLabel} Appeal</h3>
-                        <span style="color:var(--text-dark);font-size:0.85rem;">${appeal.discord} • ${appeal.date}</span>
-                    </div>
-                    <span style="color:${statusColor};font-size:0.8rem;text-transform:uppercase;letter-spacing:2px;padding:0.3rem 0.8rem;border:1px solid ${statusColor};border-radius:20px;">${appeal.status}</span>
-                </div>
-                <p style="color:var(--text-dark);margin-bottom:1rem;">${appeal.reason}</p>
-                ${appeal.status === 'pending' ? `
-                    <div style="display:flex;gap:0.5rem;">
-                        <button onclick="updateAppealStatus(${appeal.id}, 'approved')" style="background:#2ecc71;color:white;border:none;padding:0.5rem 1rem;border-radius:6px;cursor:pointer;font-family:'Cinzel',serif;">Approve</button>
-                        <button onclick="updateAppealStatus(${appeal.id}, 'denied')" style="background:#e74c3c;color:white;border:none;padding:0.5rem 1rem;border-radius:6px;cursor:pointer;font-family:'Cinzel',serif;">Deny</button>
-                    </div>
-                ` : ''}
-            </div>
-        `;
+        html += '<div class="announcement-card" style="margin-bottom:1rem;">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">';
+        html += '<div><h3 style="margin-bottom:0.3rem;">' + typeLabel + ' Appeal</h3>';
+        html += '<span style="color:var(--text-dark);font-size:0.85rem;">' + appeal.discord + ' • ' + appeal.date + '</span></div>';
+        html += '<span style="color:' + statusColor + ';font-size:0.8rem;text-transform:uppercase;letter-spacing:2px;padding:0.3rem 0.8rem;border:1px solid ' + statusColor + ';border-radius:20px;">' + appeal.status + '</span>';
+        html += '</div>';
+        html += '<p style="color:var(--text-dark);margin-bottom:1rem;">' + appeal.reason + '</p>';
+        if (appeal.status === 'pending') {
+            html += '<div style="display:flex;gap:0.5rem;">';
+            html += '<button onclick="updateAppealStatus(' + appeal.id + ', \'approved\')" style="background:#2ecc71;color:white;border:none;padding:0.5rem 1rem;border-radius:6px;cursor:pointer;font-family:Cinzel,serif;">Approve</button>';
+            html += '<button onclick="updateAppealStatus(' + appeal.id + ', \'denied\')" style="background:#e74c3c;color:white;border:none;padding:0.5rem 1rem;border-radius:6px;cursor:pointer;font-family:Cinzel,serif;">Deny</button>';
+            html += '</div>';
+        }
+        html += '</div>';
     });
     
     container.innerHTML = html;
@@ -617,7 +639,7 @@ function filterAppeals(filter) {
 
 function updateAppealStatus(id, status) {
     let appeals = JSON.parse(localStorage.getItem('ck_appeals') || '[]');
-    const appeal = appeals.find(a => a.id === id);
+    const appeal = appeals.find(function(a) { return a.id === id; });
     if (appeal) appeal.status = status;
     localStorage.setItem('ck_appeals', JSON.stringify(appeals));
     loadAppeals();
@@ -627,7 +649,10 @@ if (document.getElementById('appealsContainer')) {
     loadAppeals();
 }
 
-// ===== EDIT STAFF =====
+// ============================================
+// STAFF
+// ============================================
+
 function loadStaffList() {
     const container = document.getElementById('staffListContainer');
     if (!container) return;
@@ -644,10 +669,10 @@ function loadStaffList() {
         });
     }
     
-    allStaff.sort((a, b) => getRankLevel(b.rank) - getRankLevel(a.rank));
+    allStaff.sort(function(a, b) { return getRankLevel(b.rank) - getRankLevel(a.rank); });
     
     const rankCounts = {};
-    allStaff.forEach(s => {
+    allStaff.forEach(function(s) {
         rankCounts[s.rank] = (rankCounts[s.rank] || 0) + 1;
     });
     
@@ -667,15 +692,13 @@ function loadStaffList() {
     }
     
     let html = '<div class="staff-grid">';
-    allStaff.forEach(staff => {
-        html += `
-            <div class="staff-card" style="text-align:left;">
-                <div style="color:${staff.color};font-size:0.85rem;text-transform:uppercase;letter-spacing:3px;margin-bottom:0.5rem;padding-bottom:0.5rem;border-bottom:1px solid rgba(136,136,136,0.2);">${staff.rank}</div>
-                <h3 style="margin-bottom:0.5rem;">${staff.name}</h3>
-                <p style="color:var(--text-dark);font-size:0.9rem;">@${staff.username}</p>
-                <button onclick="removeStaff('${staff.username}')" style="margin-top:1rem;background:#e74c3c;color:white;border:none;padding:0.5rem 1rem;border-radius:6px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.8rem;">Remove</button>
-            </div>
-        `;
+    allStaff.forEach(function(staff) {
+        html += '<div class="staff-card" style="text-align:left;">';
+        html += '<div style="color:' + staff.color + ';font-size:0.85rem;text-transform:uppercase;letter-spacing:3px;margin-bottom:0.5rem;padding-bottom:0.5rem;border-bottom:1px solid rgba(136,136,136,0.2);">' + staff.rank + '</div>';
+        html += '<h3 style="margin-bottom:0.5rem;">' + staff.name + '</h3>';
+        html += '<p style="color:var(--text-dark);font-size:0.9rem;">@' + staff.username + '</p>';
+        html += '<button onclick="removeStaff(\'' + staff.username + '\')" style="margin-top:1rem;background:#e74c3c;color:white;border:none;padding:0.5rem 1rem;border-radius:6px;cursor:pointer;font-family:Cinzel,serif;font-size:0.8rem;">Remove</button>';
+        html += '</div>';
     });
     html += '</div>';
     
@@ -703,7 +726,10 @@ if (document.getElementById('staffListContainer')) {
     loadStaffList();
 }
 
-// ===== CREATE APPLICATION MODAL =====
+// ============================================
+// MODALS
+// ============================================
+
 function openCreateAppModal() {
     const existing = document.getElementById('createAppModal');
     if (existing) existing.remove();
@@ -712,35 +738,14 @@ function openCreateAppModal() {
     overlay.id = 'createAppModal';
     overlay.className = 'modal-overlay active';
     
-    overlay.innerHTML = `
-        <div class="modal">
-            <h2>➕ Create Application</h2>
-            <form id="createAppForm">
-                <div class="form-group">
-                    <label>Applicant Name</label>
-                    <input type="text" id="createAppName" placeholder="Enter name" required>
-                </div>
-                <div class="form-group">
-                    <label>Discord Username</label>
-                    <input type="text" id="createAppDiscord" placeholder="e.g. User#1234" required>
-                </div>
-                <div class="form-group">
-                    <label>Position</label>
-                    <select id="createAppType" required>
-                        <option value="Magic Knight">Magic Knight</option>
-                        <option value="Staff">Staff</option>
-                        <option value="Squad Member">Squad Member</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Notes (Optional)</label>
-                    <textarea id="createAppNotes" rows="3" placeholder="Internal notes..."></textarea>
-                </div>
-                <button type="submit" class="btn-submit">Create Application</button>
-                <button type="button" class="btn-submit" style="background:#555;margin-top:0.5rem;" onclick="closeCreateAppModal()">Cancel</button>
-            </form>
-        </div>
-    `;
+    overlay.innerHTML = '<div class="modal"><h2>➕ Create Application</h2><form id="createAppForm">' +
+        '<div class="form-group"><label>Applicant Name</label><input type="text" id="createAppName" placeholder="Enter name" required></div>' +
+        '<div class="form-group"><label>Discord Username</label><input type="text" id="createAppDiscord" placeholder="e.g. User#1234" required></div>' +
+        '<div class="form-group"><label>Position</label><select id="createAppType" required><option value="Magic Knight">Magic Knight</option><option value="Staff">Staff</option><option value="Squad Member">Squad Member</option></select></div>' +
+        '<div class="form-group"><label>Notes (Optional)</label><textarea id="createAppNotes" rows="3" placeholder="Internal notes..."></textarea></div>' +
+        '<button type="submit" class="btn-submit">Create Application</button>' +
+        '<button type="button" class="btn-submit" style="background:#555;margin-top:0.5rem;" onclick="closeCreateAppModal()">Cancel</button>' +
+        '</form></div>';
     
     overlay.addEventListener('click', function(e) {
         if (e.target === overlay) closeCreateAppModal();
@@ -775,7 +780,6 @@ function closeCreateAppModal() {
     if (modal) modal.remove();
 }
 
-// ===== ADD STAFF MODAL =====
 function openAddStaffModal() {
     const existing = document.getElementById('addStaffModal');
     if (existing) existing.remove();
@@ -784,36 +788,14 @@ function openAddStaffModal() {
     overlay.id = 'addStaffModal';
     overlay.className = 'modal-overlay active';
     
-    overlay.innerHTML = `
-        <div class="modal">
-            <h2>➕ Add Staff Member</h2>
-            <form id="addStaffForm">
-                <div class="form-group">
-                    <label>Username</label>
-                    <input type="text" id="addStaffUser" placeholder="Login username" required>
-                </div>
-                <div class="form-group">
-                    <label>Display Name</label>
-                    <input type="text" id="addStaffName" placeholder="Display name" required>
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="text" id="addStaffPass" placeholder="Temporary password" required>
-                </div>
-                <div class="form-group">
-                    <label>Rank</label>
-                    <select id="addStaffRank" required>
-                        <option value="Vice Captain">Vice Captain</option>
-                        <option value="Captain">Captain</option>
-                        <option value="Sovereign">Sovereign</option>
-                        <option value="Wizard King">Wizard King</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn-submit">Add Staff</button>
-                <button type="button" class="btn-submit" style="background:#555;margin-top:0.5rem;" onclick="closeAddStaffModal()">Cancel</button>
-            </form>
-        </div>
-    `;
+    overlay.innerHTML = '<div class="modal"><h2>➕ Add Staff Member</h2><form id="addStaffForm">' +
+        '<div class="form-group"><label>Username</label><input type="text" id="addStaffUser" placeholder="Login username" required></div>' +
+        '<div class="form-group"><label>Display Name</label><input type="text" id="addStaffName" placeholder="Display name" required></div>' +
+        '<div class="form-group"><label>Password</label><input type="text" id="addStaffPass" placeholder="Temporary password" required></div>' +
+        '<div class="form-group"><label>Rank</label><select id="addStaffRank" required><option value="Vice Captain">Vice Captain</option><option value="Captain">Captain</option><option value="Sovereign">Sovereign</option><option value="Wizard King">Wizard King</option></select></div>' +
+        '<button type="submit" class="btn-submit">Add Staff</button>' +
+        '<button type="button" class="btn-submit" style="background:#555;margin-top:0.5rem;" onclick="closeAddStaffModal()">Cancel</button>' +
+        '</form></div>';
     
     overlay.addEventListener('click', function(e) {
         if (e.target === overlay) closeAddStaffModal();
@@ -848,7 +830,6 @@ function closeAddStaffModal() {
     if (modal) modal.remove();
 }
 
-// ===== REMOVE STAFF MODAL =====
 function openRemoveStaffModal() {
     const config = loadAccountsConfig();
     const users = config.users;
@@ -871,19 +852,11 @@ function openRemoveStaffModal() {
     overlay.id = 'removeStaffModal';
     overlay.className = 'modal-overlay active';
     
-    overlay.innerHTML = `
-        <div class="modal">
-            <h2>➖ Remove Staff</h2>
-            <form id="removeStaffForm">
-                <div class="form-group">
-                    <label>Select Staff Member</label>
-                    <select id="removeStaffSelect" required>${options}</select>
-                </div>
-                <button type="submit" class="btn-submit" style="background:#e74c3c;">Remove Staff</button>
-                <button type="button" class="btn-submit" style="background:#555;margin-top:0.5rem;" onclick="closeRemoveStaffModal()">Cancel</button>
-            </form>
-        </div>
-    `;
+    overlay.innerHTML = '<div class="modal"><h2>➖ Remove Staff</h2><form id="removeStaffForm">' +
+        '<div class="form-group"><label>Select Staff Member</label><select id="removeStaffSelect" required>' + options + '</select></div>' +
+        '<button type="submit" class="btn-submit" style="background:#e74c3c;">Remove Staff</button>' +
+        '<button type="button" class="btn-submit" style="background:#555;margin-top:0.5rem;" onclick="closeRemoveStaffModal()">Cancel</button>' +
+        '</form></div>';
     
     overlay.addEventListener('click', function(e) {
         if (e.target === overlay) closeRemoveStaffModal();
@@ -904,7 +877,6 @@ function closeRemoveStaffModal() {
     if (modal) modal.remove();
 }
 
-// ===== CHANGE RANK MODAL =====
 function openChangeRankModal() {
     const config = loadAccountsConfig();
     const users = config.users;
@@ -913,13 +885,11 @@ function openChangeRankModal() {
         userOptions += '<option value="' + username + '">' + (data.displayName || username) + ' (' + data.rank + ')</option>';
     }
     
-    const rankOptions = `
-        <option value="Vice Captain">Vice Captain</option>
-        <option value="Captain">Captain</option>
-        <option value="Sovereign">Sovereign</option>
-        <option value="Wizard King">Wizard King</option>
-        <option value="Owner">Owner</option>
-    `;
+    const rankOptions = '<option value="Vice Captain">Vice Captain</option>' +
+        '<option value="Captain">Captain</option>' +
+        '<option value="Sovereign">Sovereign</option>' +
+        '<option value="Wizard King">Wizard King</option>' +
+        '<option value="Owner">Owner</option>';
     
     const existing = document.getElementById('changeRankModal');
     if (existing) existing.remove();
@@ -928,23 +898,12 @@ function openChangeRankModal() {
     overlay.id = 'changeRankModal';
     overlay.className = 'modal-overlay active';
     
-    overlay.innerHTML = `
-        <div class="modal">
-            <h2>🔄 Change Rank</h2>
-            <form id="changeRankForm">
-                <div class="form-group">
-                    <label>Select Staff Member</label>
-                    <select id="changeRankUser" required>${userOptions}</select>
-                </div>
-                <div class="form-group">
-                    <label>New Rank</label>
-                    <select id="changeRankNew" required>${rankOptions}</select>
-                </div>
-                <button type="submit" class="btn-submit">Change Rank</button>
-                <button type="button" class="btn-submit" style="background:#555;margin-top:0.5rem;" onclick="closeChangeRankModal()">Cancel</button>
-            </form>
-        </div>
-    `;
+    overlay.innerHTML = '<div class="modal"><h2>🔄 Change Rank</h2><form id="changeRankForm">' +
+        '<div class="form-group"><label>Select Staff Member</label><select id="changeRankUser" required>' + userOptions + '</select></div>' +
+        '<div class="form-group"><label>New Rank</label><select id="changeRankNew" required>' + rankOptions + '</select></div>' +
+        '<button type="submit" class="btn-submit">Change Rank</button>' +
+        '<button type="button" class="btn-submit" style="background:#555;margin-top:0.5rem;" onclick="closeChangeRankModal()">Cancel</button>' +
+        '</form></div>';
     
     overlay.addEventListener('click', function(e) {
         if (e.target === overlay) closeChangeRankModal();
@@ -974,7 +933,10 @@ function closeChangeRankModal() {
     if (modal) modal.remove();
 }
 
-// ===== OWNER PANEL =====
+// ============================================
+// OWNER PANEL
+// ============================================
+
 function initOwnerPanel() {
     const session = getSession();
     if (!session || session.level < 5) {
@@ -1013,13 +975,11 @@ function loadSystemActivityLog() {
     }
     
     let html = '';
-    logs.slice(0, 50).forEach(log => {
-        html += `
-            <div class="activity-item">
-                <div class="activity-time">${log.time}</div>
-                <div class="activity-text">${log.action}</div>
-            </div>
-        `;
+    logs.slice(0, 50).forEach(function(log) {
+        html += '<div class="activity-item">';
+        html += '<div class="activity-time">' + log.time + '</div>';
+        html += '<div class="activity-text">' + log.action + '</div>';
+        html += '</div>';
     });
     
     container.innerHTML = html;
@@ -1041,7 +1001,10 @@ function clearActivityLog() {
     loadSystemActivityLog();
 }
 
-// ===== RESET DATA MODAL =====
+// ============================================
+// RESET / EXPORT / IMPORT / SETTINGS
+// ============================================
+
 function openResetDataModal() {
     const existing = document.getElementById('resetDataModal');
     if (existing) existing.remove();
@@ -1050,31 +1013,21 @@ function openResetDataModal() {
     overlay.id = 'resetDataModal';
     overlay.className = 'modal-overlay active';
     
-    overlay.innerHTML = `
-        <div class="modal">
-            <h2>🗑️ Reset Data</h2>
-            <p style="color:#e74c3c;text-align:center;margin-bottom:1.5rem;">WARNING: This cannot be undone!</p>
-            <form id="resetDataForm">
-                <div class="form-group">
-                    <label>Select Data to Reset</label>
-                    <select id="resetType" required>
-                        <option value="all">Everything (Full Reset)</option>
-                        <option value="applications">Applications Only</option>
-                        <option value="events">Events Only</option>
-                        <option value="announcements">Announcements Only</option>
-                        <option value="appeals">Appeals Only</option>
-                        <option value="activity">Activity Log Only</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Confirm Password</label>
-                    <input type="password" id="resetConfirmPass" placeholder="Enter your password" required>
-                </div>
-                <button type="submit" class="btn-submit" style="background:#e74c3c;">Reset Data</button>
-                <button type="button" class="btn-submit" style="background:#555;margin-top:0.5rem;" onclick="closeResetDataModal()">Cancel</button>
-            </form>
-        </div>
-    `;
+    overlay.innerHTML = '<div class="modal"><h2>🗑️ Reset Data</h2>' +
+        '<p style="color:#e74c3c;text-align:center;margin-bottom:1.5rem;">WARNING: This cannot be undone!</p>' +
+        '<form id="resetDataForm">' +
+        '<div class="form-group"><label>Select Data to Reset</label><select id="resetType" required>' +
+        '<option value="all">Everything (Full Reset)</option>' +
+        '<option value="applications">Applications Only</option>' +
+        '<option value="events">Events Only</option>' +
+        '<option value="announcements">Announcements Only</option>' +
+        '<option value="appeals">Appeals Only</option>' +
+        '<option value="activity">Activity Log Only</option>' +
+        '</select></div>' +
+        '<div class="form-group"><label>Confirm Password</label><input type="password" id="resetConfirmPass" placeholder="Enter your password" required></div>' +
+        '<button type="submit" class="btn-submit" style="background:#e74c3c;">Reset Data</button>' +
+        '<button type="button" class="btn-submit" style="background:#555;margin-top:0.5rem;" onclick="closeResetDataModal()">Cancel</button>' +
+        '</form></div>';
     
     overlay.addEventListener('click', function(e) {
         if (e.target === overlay) closeResetDataModal();
@@ -1162,7 +1115,6 @@ function closeResetDataModal() {
     if (modal) modal.remove();
 }
 
-// ===== EXPORT DATA MODAL =====
 function openExportDataModal() {
     const existing = document.getElementById('exportDataModal');
     if (existing) existing.remove();
@@ -1184,17 +1136,12 @@ function openExportDataModal() {
     overlay.id = 'exportDataModal';
     overlay.className = 'modal-overlay active';
     
-    overlay.innerHTML = `
-        <div class="modal">
-            <h2>📤 Export Data</h2>
-            <p style="color:var(--text-dark);margin-bottom:1rem;">Copy this data to save a backup:</p>
-            <div class="form-group">
-                <textarea id="exportDataArea" rows="10" readonly style="font-family:monospace;font-size:0.75rem;">${jsonString}</textarea>
-            </div>
-            <button type="button" class="btn-submit" onclick="copyExportData()">Copy to Clipboard</button>
-            <button type="button" class="btn-submit" style="background:#555;margin-top:0.5rem;" onclick="closeExportDataModal()">Close</button>
-        </div>
-    `;
+    overlay.innerHTML = '<div class="modal"><h2>📤 Export Data</h2>' +
+        '<p style="color:var(--text-dark);margin-bottom:1rem;">Copy this data to save a backup:</p>' +
+        '<div class="form-group"><textarea id="exportDataArea" rows="10" readonly style="font-family:monospace;font-size:0.75rem;">' + jsonString + '</textarea></div>' +
+        '<button type="button" class="btn-submit" onclick="copyExportData()">Copy to Clipboard</button>' +
+        '<button type="button" class="btn-submit" style="background:#555;margin-top:0.5rem;" onclick="closeExportDataModal()">Close</button>' +
+        '</div>';
     
     overlay.addEventListener('click', function(e) {
         if (e.target === overlay) closeExportDataModal();
@@ -1216,7 +1163,6 @@ function closeExportDataModal() {
     if (modal) modal.remove();
 }
 
-// ===== IMPORT DATA MODAL =====
 function openImportDataModal() {
     const existing = document.getElementById('importDataModal');
     if (existing) existing.remove();
@@ -1225,24 +1171,14 @@ function openImportDataModal() {
     overlay.id = 'importDataModal';
     overlay.className = 'modal-overlay active';
     
-    overlay.innerHTML = `
-        <div class="modal">
-            <h2>📥 Import Data</h2>
-            <p style="color:#e74c3c;text-align:center;margin-bottom:1rem;">WARNING: This will overwrite existing data!</p>
-            <form id="importDataForm">
-                <div class="form-group">
-                    <label>Paste Backup Data (JSON)</label>
-                    <textarea id="importDataArea" rows="10" placeholder="Paste your backup JSON here..." required style="font-family:monospace;font-size:0.75rem;"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Confirm Password</label>
-                    <input type="password" id="importConfirmPass" placeholder="Enter your password" required>
-                </div>
-                <button type="submit" class="btn-submit" style="background:#e74c3c;">Import Data</button>
-                <button type="button" class="btn-submit" style="background:#555;margin-top:0.5rem;" onclick="closeImportDataModal()">Cancel</button>
-            </form>
-        </div>
-    `;
+    overlay.innerHTML = '<div class="modal"><h2>📥 Import Data</h2>' +
+        '<p style="color:#e74c3c;text-align:center;margin-bottom:1rem;">WARNING: This will overwrite existing data!</p>' +
+        '<form id="importDataForm">' +
+        '<div class="form-group"><label>Paste Backup Data (JSON)</label><textarea id="importDataArea" rows="10" placeholder="Paste your backup JSON here..." required style="font-family:monospace;font-size:0.75rem;"></textarea></div>' +
+        '<div class="form-group"><label>Confirm Password</label><input type="password" id="importConfirmPass" placeholder="Enter your password" required></div>' +
+        '<button type="submit" class="btn-submit" style="background:#e74c3c;">Import Data</button>' +
+        '<button type="button" class="btn-submit" style="background:#555;margin-top:0.5rem;" onclick="closeImportDataModal()">Cancel</button>' +
+        '</form></div>';
     
     overlay.addEventListener('click', function(e) {
         if (e.target === overlay) closeImportDataModal();
@@ -1293,7 +1229,6 @@ function closeImportDataModal() {
     if (modal) modal.remove();
 }
 
-// ===== SITE SETTINGS MODAL =====
 function openSiteSettingsModal() {
     const existing = document.getElementById('siteSettingsModal');
     if (existing) existing.remove();
@@ -1306,28 +1241,13 @@ function openSiteSettingsModal() {
     overlay.id = 'siteSettingsModal';
     overlay.className = 'modal-overlay active';
     
-    overlay.innerHTML = `
-        <div class="modal">
-            <h2>⚙️ Site Settings</h2>
-            <form id="siteSettingsForm">
-                <div class="form-group">
-                    <label>Discord Webhook URL (Global)</label>
-                    <input type="text" id="globalWebhookUrl" value="${currentWebhook}" placeholder="https://discord.com/api/webhooks/..." style="font-family:monospace;font-size:0.85rem;">
-                    <small style="color:var(--text-dark);display:block;margin-top:0.5rem;">Used for all Discord announcements</small>
-                </div>
-                <div class="form-group">
-                    <label>Site Title</label>
-                    <input type="text" id="siteTitle" value="${currentTitle}" placeholder="Site title">
-                </div>
-                <div class="form-group">
-                    <label>Site Subtitle</label>
-                    <input type="text" id="siteSubtitle" value="${currentSubtitle}" placeholder="Site subtitle">
-                </div>
-                <button type="submit" class="btn-submit">Save Settings</button>
-                <button type="button" class="btn-submit" style="background:#555;margin-top:0.5rem;" onclick="closeSiteSettingsModal()">Cancel</button>
-            </form>
-        </div>
-    `;
+    overlay.innerHTML = '<div class="modal"><h2>⚙️ Site Settings</h2><form id="siteSettingsForm">' +
+        '<div class="form-group"><label>Discord Webhook URL (Global)</label><input type="text" id="globalWebhookUrl" value="' + currentWebhook + '" placeholder="https://discord.com/api/webhooks/..." style="font-family:monospace;font-size:0.85rem;"><small style="color:var(--text-dark);display:block;margin-top:0.5rem;">Used for all Discord announcements</small></div>' +
+        '<div class="form-group"><label>Site Title</label><input type="text" id="siteTitle" value="' + currentTitle + '" placeholder="Site title"></div>' +
+        '<div class="form-group"><label>Site Subtitle</label><input type="text" id="siteSubtitle" value="' + currentSubtitle + '" placeholder="Site subtitle"></div>' +
+        '<button type="submit" class="btn-submit">Save Settings</button>' +
+        '<button type="button" class="btn-submit" style="background:#555;margin-top:0.5rem;" onclick="closeSiteSettingsModal()">Cancel</button>' +
+        '</form></div>';
     
     overlay.addEventListener('click', function(e) {
         if (e.target === overlay) closeSiteSettingsModal();
@@ -1357,69 +1277,31 @@ function closeSiteSettingsModal() {
     if (modal) modal.remove();
 }
 
-// Init owner panel
 if (document.getElementById('systemActivityLog')) {
     initOwnerPanel();
 }
 
-// ===== SIDEBAR TOGGLE =====
-const sidebar = document.getElementById('sidebar');
-const sidebarToggle = document.getElementById('sidebarToggle');
-const mainContent = document.getElementById('mainContent');
-const footer = document.getElementById('footer');
-const dashboardMain = document.querySelector('.dashboard-main');
+// ============================================
+// ANIMATIONS & EFFECTS
+// ============================================
 
-let sidebarOpen = false;
-
-function toggleSidebar() {
-    sidebarOpen = !sidebarOpen;
-    
-    if (sidebarOpen) {
-        sidebar.classList.remove('collapsed');
-        sidebarToggle.classList.add('shifted');
-        sidebarToggle.classList.add('active');
-    } else {
-        sidebar.classList.add('collapsed');
-        sidebarToggle.classList.remove('shifted');
-        sidebarToggle.classList.remove('active');
-    }
-    
-    if (mainContent) {
-        mainContent.classList.toggle('expanded', !sidebarOpen);
-    }
-    
-    if (footer) {
-        footer.classList.toggle('expanded', !sidebarOpen);
-    }
-    
-    if (dashboardMain) {
-        dashboardMain.classList.toggle('expanded', !sidebarOpen);
-    }
-}
-
-if (sidebarToggle) {
-    sidebarToggle.addEventListener('click', toggleSidebar);
-}
-
-// ===== FADE UP ON SCROLL =====
 const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -50px 0px'
 };
 
-const fadeObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
+const fadeObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
         if (entry.isIntersecting) {
             entry.target.classList.add('visible');
         }
     });
 }, observerOptions);
 
-document.querySelectorAll('.fade-up').forEach(el => {
+document.querySelectorAll('.fade-up').forEach(function(el) {
     fadeObserver.observe(el);
 });
 
-// ===== MAGIC PARTICLES =====
 function createParticles() {
     const container = document.getElementById('particles');
     if (!container) return;
@@ -1438,47 +1320,8 @@ function createParticles() {
 
 createParticles();
 
-// ===== SESSION UTILS =====
-function getUsers() {
-    const config = loadAccountsConfig();
-    return config.users || {};
-}
+// ============================================
+// INIT
+// ============================================
 
-function getSession() {
-    const session = localStorage.getItem('ck_session');
-    if (!session) return null;
-    try {
-        return JSON.parse(session);
-    } catch {
-        return null;
-    }
-}
-
-function setSession(user) {
-    const config = loadAccountsConfig();
-    const rankData = config.ranks[user.rank] || { level: 0, color: '#888' };
-    localStorage.setItem('ck_session', JSON.stringify({
-        username: Object.keys(config.users).find(k => config.users[k] === user) || user.displayName,
-        rank: user.rank,
-        level: rankData.level,
-        color: rankData.color,
-        displayName: user.displayName
-    }));
-}
-
-function clearSession() {
-    localStorage.removeItem('ck_session');
-}
-
-function getRankColor(rank) {
-    const config = loadAccountsConfig();
-    return (config.ranks[rank] || {}).color || '#888';
-}
-
-function getRankLevel(rank) {
-    const config = loadAccountsConfig();
-    return (config.ranks[rank] || {}).level || 0;
-}
-
-// ===== INIT =====
 updateAuthNav();
