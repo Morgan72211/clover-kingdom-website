@@ -3,64 +3,86 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Serve static files from root directory
+// Serve static files (CSS, JS, images)
 app.use(express.static(path.join(__dirname)));
 
-// Serve all HTML pages
+// Helper function to serve HTML pages
+function servePage(res, pageName) {
+    const filePath = path.join(__dirname, pageName + '.html');
+    res.sendFile(filePath, (err) => {
+        if (err) {
+            res.status(404).send('Page not found');
+        }
+    });
+}
+
+// Root route
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    servePage(res, 'index');
 });
 
+// Public pages
 app.get('/announcements', (req, res) => {
-    res.sendFile(path.join(__dirname, 'announcements.html'));
+    servePage(res, 'announcements');
 });
 
 app.get('/applications', (req, res) => {
-    res.sendFile(path.join(__dirname, 'applications.html'));
+    servePage(res, 'applications');
 });
 
 app.get('/events', (req, res) => {
-    res.sendFile(path.join(__dirname, 'events.html'));
+    servePage(res, 'events');
 });
 
 app.get('/appeals', (req, res) => {
-    res.sendFile(path.join(__dirname, 'appeals.html'));
+    servePage(res, 'appeals');
 });
 
 app.get('/staff', (req, res) => {
-    res.sendFile(path.join(__dirname, 'staff.html'));
+    servePage(res, 'staff');
 });
 
 app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'login.html'));
+    servePage(res, 'login');
 });
 
+// Dashboard and management pages
 app.get('/dashboard', (req, res) => {
-    res.sendFile(path.join(__dirname, 'dashboard.html'));
+    servePage(res, 'dashboard');
 });
 
 app.get('/manage-events', (req, res) => {
-    res.sendFile(path.join(__dirname, 'manage-events.html'));
+    servePage(res, 'manage-events');
 });
 
 app.get('/manage-announcements', (req, res) => {
-    res.sendFile(path.join(__dirname, 'manage-announcements.html'));
+    servePage(res, 'manage-announcements');
 });
 
 app.get('/review-applications', (req, res) => {
-    res.sendFile(path.join(__dirname, 'review-applications.html'));
+    servePage(res, 'review-applications');
 });
 
 app.get('/review-appeals', (req, res) => {
-    res.sendFile(path.join(__dirname, 'review-appeals.html'));
+    servePage(res, 'review-appeals');
 });
 
 app.get('/edit-staff', (req, res) => {
-    res.sendFile(path.join(__dirname, 'edit-staff.html'));
+    servePage(res, 'edit-staff');
 });
 
 app.get('/owner-panel', (req, res) => {
-    res.sendFile(path.join(__dirname, 'owner-panel.html'));
+    servePage(res, 'owner-panel');
+});
+
+// Also handle .html extensions (for backwards compatibility)
+app.get('/:page.html', (req, res) => {
+    servePage(res, req.params.page);
+});
+
+// Catch-all 404
+app.get('*', (req, res) => {
+    res.status(404).send('Page not found - Clover Kingdom');
 });
 
 app.listen(PORT, () => {
