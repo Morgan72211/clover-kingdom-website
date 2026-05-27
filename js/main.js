@@ -37,56 +37,8 @@ let ACCOUNTS_CONFIG = loadAccountsConfig();
 
 // ============================================
 
-// ===== DISCORD WEBHOOK URL (EDIT THIS) =====
-const DISCORD_WEBHOOK_URL = '';
-
-// ===== AUTH SYSTEM =====
-function getUsers() {
-    const config = loadAccountsConfig();
-    return config.users;
-}
-
-function getRanks() {
-    const config = loadAccountsConfig();
-    return config.ranks;
-}
-
-function setSession(user) {
-    const config = loadAccountsConfig();
-    const ranks = config.ranks;
-    const session = {
-        username: user.displayName,
-        rank: user.rank,
-        level: ranks[user.rank] ? ranks[user.rank].level : 0,
-        loginTime: Date.now()
-    };
-    localStorage.setItem('cloverSession', JSON.stringify(session));
-}
-
-function getSession() {
-    const data = localStorage.getItem('cloverSession');
-    return data ? JSON.parse(data) : null;
-}
-
-function clearSession() {
-    localStorage.removeItem('cloverSession');
-}
-
-function isLoggedIn() {
-    return getSession() !== null;
-}
-
-function getRankColor(rank) {
-    const config = loadAccountsConfig();
-    const ranks = config.ranks;
-    return ranks[rank] ? ranks[rank].color : '#888888';
-}
-
-function getRankLevel(rank) {
-    const config = loadAccountsConfig();
-    const ranks = config.ranks;
-    return ranks[rank] ? ranks[rank].level : 0;
-}
+// ===== DISCORD WEBHOOK URL (DEFAULT - CHANGE THIS) =====
+const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1366958369926660196/EXAMPLE_TOKEN'; // <-- PUT YOUR REAL WEBHOOK HERE
 
 // ===== LOGIN FORM =====
 const loginForm = document.getElementById('loginForm');
@@ -347,7 +299,7 @@ function deleteEvent(id) {
     loadEvents();
 }
 
-// ===== MANAGE ANNOUNCEMENTS =====
+// ===== MANAGE ANNOUNCEMENTS (SINGLE HANDLER - FIXED) =====
 const announcementForm = document.getElementById('announcementForm');
 if (announcementForm) {
     loadAnnouncements();
@@ -376,7 +328,7 @@ if (announcementForm) {
                 await sendToDiscord(webhookUrl, title, message, priority);
                 alert('Announcement posted to website and Discord!');
             } catch (err) {
-                alert('Saved to website but Discord webhook failed. Check your URL.');
+                alert('Saved to website but Discord webhook failed: ' + err.message);
             }
         } else if (sendToDiscord && !webhookUrl) {
             alert('Announcement saved to website! (No webhook configured - save one above)');
@@ -391,7 +343,41 @@ if (announcementForm) {
     });
 }
 
+// ===== SEND TO DISCORD (PROXY THROUGH SERVER) =====
 async function sendToDiscord(webhookUrl, title, message, priority) {
+    const colors = {
+        normal: 0x888888,
+        important: 0xf39c12,
+        urgent: 0xe74c3c
+    };
+    
+    const payload = {
+        embeds: [{
+            title: `📢 ${title}`,
+            description: message,
+            color: colors[priority] || colors.normal,
+            footer: { text: 'Clover Kingdom Announcements' },
+            timestamp: new Date().toISOString()
+        }]
+    };
+    
+    // Send to YOUR server instead of Discord directly (avoids CORS)
+    const response = await fetch('/api/send-announcement', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ webhookUrl, payload })
+    });
+    
+    if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || `Server error: ${response.status}`);
+    }
+    return response;
+}
+
+// ===== DIRECT DISCORD CALL (FOR TESTING - WILL FAIL DUE TO CORS IN BROWSER) =====
+// Only use this if you're running in an environment without CORS (like Node.js or a browser extension)
+async function sendToDiscordDirect(webhookUrl, title, message, priority) {
     const colors = {
         normal: 0x888888,
         important: 0xf39c12,
@@ -1451,6 +1437,48 @@ function createParticles() {
 }
 
 createParticles();
+
+// ===== SESSION UTILS =====
+function getUsers() {
+    const config = loadAccountsConfig();
+    return config.users || {};
+}
+
+function getSession() {
+    const session = localStorage.getItem('ck_session');
+    if (!session) return null;
+    try {
+        return JSON.parse(session);
+    } catch {
+        return null;
+    }
+}
+
+function setSession(user) {
+    const config = loadAccountsConfig();
+    const rankData = config.ranks[user.rank] || { level: 0, color: '#888' };
+    localStorage.setItem('ck_session', JSON.stringify({
+        username: Object.keys(config.users).find(k => config.users[k] === user) || user.displayName,
+        rank: user.rank,
+        level: rankData.level,
+        color: rankData.color,
+        displayName: user.displayName
+    }));
+}
+
+function clearSession() {
+    localStorage.removeItem('ck_session');
+}
+
+function getRankColor(rank) {
+    const config = loadAccountsConfig();
+    return (config.ranks[rank] || {}).color || '#888';
+}
+
+function getRankLevel(rank) {
+    const config = loadAccountsConfig();
+    return (config.ranks[rank] || {}).level || 0;
+}
 
 // ===== INIT =====
 updateAuthNav();

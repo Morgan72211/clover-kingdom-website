@@ -1,10 +1,43 @@
+const fetch = require('node-fetch');
 const express = require('express');
 const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Parse JSON request bodies (needed for the webhook proxy)
+app.use(express.json());
+
 // Serve static files (CSS, JS, images)
 app.use(express.static(path.join(__dirname)));
+
+// ===== DISCORD WEBHOOK PROXY =====
+// Browsers can't send requests to Discord directly due to CORS.
+// This route receives the webhook data from the browser and forwards it to Discord.
+app.post('/api/send-announcement', async (req, res) => {
+    const { webhookUrl, payload } = req.body;
+    
+    // Validate webhook URL
+    if (!webhookUrl || !webhookUrl.startsWith('https://discord.com/api/webhooks/')) {
+        return res.status(400).send('Invalid webhook URL. Must be a Discord webhook URL starting with https://discord.com/api/webhooks/');
+    }
+    
+    try {
+        const response = await fetch(webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+            const text = await response.text();
+            return res.status(502).send(`Discord error ${response.status}: ${text}`);
+        }
+        
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).send(`Server error: ${err.message}`);
+    }
+});
 
 // Helper function to serve HTML pages
 function servePage(res, pageName) {
