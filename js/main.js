@@ -13,12 +13,11 @@ function loadAccountsConfig() {
                 password: "CloverKingdom_SilverSovereign",
                 rank: "Owner",
                 displayName: "Suki"
+            "Suki": {
+                password: "PhoenixM",
+                rank: "Wizard King",
+                displayName: "Gale"
             }
-	"Gale": {
-		password: "PhoenixM",
-		rank: "Wizard King",
-		displayName: "Gale"
-        },
         ranks: {
             "Vice Captain": { level: 1, color: "#7f8c8d" },
             "Captain": { level: 2, color: "#95a5a6" },
