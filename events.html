@@ -21,7 +21,7 @@
             <li><a href="staff.html">Staff</a></li>
         </ul>
         <div class="sidebar-footer">
-            <a href="dashboard.html" class="btn-signin">Sign In</a>
+            <a href="login.html" id="auth-link" class="btn-signin">Sign In</a>
         </div>
     </nav>
 
@@ -43,31 +43,13 @@
 
         <section class="page-section">
             <div class="container">
-                <div class="cards-grid">
-                    <div class="card fade-up">
-                        <div class="card-icon">⚔️</div>
-                        <h3>Magic Knight Tournament</h3>
-                        <p>Compete against the strongest mages in the kingdom. Grand prize: Royal Grimoire.</p>
-                        <div class="event-date">June 15, 2026</div>
-                    </div>
-                    <div class="card fade-up">
-                        <div class="card-icon">🐉</div>
-                        <h3>Beast Hunt Quest</h3>
-                        <p>Join a squad to track and subdue magical beasts threatening nearby villages.</p>
-                        <div class="event-date">June 22, 2026</div>
-                    </div>
-                    <div class="card fade-up">
-                        <div class="card-icon">🎉</div>
-                        <h3>Kingdom Festival</h3>
-                        <p>Celebrate the founding of Clover Kingdom with games, food, and magic displays.</p>
-                        <div class="event-date">July 1, 2026</div>
-                    </div>
+                <div class="cards-grid" id="publicEventsContainer">
+                    <!-- Events loaded dynamically -->
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- Footer -->
     <footer class="footer expanded" id="footer">
         <div class="container">
             <div class="footer-content">
@@ -79,5 +61,63 @@
     </footer>
 
     <script src="js/main.js"></script>
+    <script>
+        // Load events for public page
+        function loadPublicEvents() {
+            const container = document.getElementById('publicEventsContainer');
+            if (!container) return;
+            
+            let events = JSON.parse(localStorage.getItem('ck_events') || '[]');
+            
+            // Add demo events if empty (these will be deletable)
+            if (events.length === 0) {
+                events = [
+                    {
+                        name: 'Magic Knight Tournament',
+                        date: '2026-06-15',
+                        desc: 'Compete against the strongest mages in the kingdom. Grand prize: Royal Grimoire.',
+                        type: 'tournament',
+                        id: 2001
+                    },
+                    {
+                        name: 'Beast Hunt Quest',
+                        date: '2026-06-22',
+                        desc: 'Join a squad to track and subdue magical beasts threatening nearby villages.',
+                        type: 'quest',
+                        id: 2002
+                    },
+                    {
+                        name: 'Kingdom Festival',
+                        date: '2026-07-01',
+                        desc: 'Celebrate the founding of Clover Kingdom with games, food, and magic displays.',
+                        type: 'festival',
+                        id: 2003
+                    }
+                ];
+                localStorage.setItem('ck_events', JSON.stringify(events));
+            }
+            
+            if (events.length === 0) {
+                container.innerHTML = '<p style="color:var(--text-dark);text-align:center;">No events scheduled yet.</p>';
+                return;
+            }
+            
+            let html = '';
+            events.forEach(event => {
+                html += `
+                    <div class="card">
+                        <div class="card-icon">📅</div>
+                        <h3>${event.name}</h3>
+                        <p>${event.desc}</p>
+                        <div class="event-date">${event.date}</div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        loadPublicEvents();
+    </script>
 </body>
 </html>
