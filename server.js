@@ -1,6 +1,6 @@
-const fetch = require('node-fetch');
 const express = require('express');
 const path = require('path');
+const fetch = require('node-fetch');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -30,12 +30,12 @@ app.post('/api/send-announcement', async (req, res) => {
         
         if (!response.ok) {
             const text = await response.text();
-            return res.status(502).send(`Discord error ${response.status}: ${text}`);
+            return res.status(502).send('Discord error ' + response.status + ': ' + text);
         }
         
         res.json({ success: true });
     } catch (err) {
-        res.status(500).send(`Server error: ${err.message}`);
+        res.status(500).send('Server error: ' + err.message);
     }
 });
 
@@ -119,5 +119,5 @@ app.get('*', (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`Clover Kingdom server running on port ${PORT}`);
+    console.log('Clover Kingdom server running on port ' + PORT);
 });
