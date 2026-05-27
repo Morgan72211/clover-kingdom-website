@@ -40,35 +40,89 @@
         <section class="page-section">
             <div class="container">
                 <div class="form-container fade-up">
-                                       <!-- Discord Webhook Config -->
+                    <!-- Discord Webhook Config -->
                     <div class="webhook-config" style="background:rgba(114,137,218,0.1);border:1px solid rgba(114,137,218,0.3);border-radius:12px;padding:1.5rem;margin-bottom:2rem;">
                         <h3 style="color:#7289da;margin-bottom:1rem;">Discord Integration</h3>
                         <div class="form-group">
-                            <label>Discord Webhook URL (Optional - override default)</label>
-                            <input type="text" id="webhookUrl" placeholder="Leave empty to use default webhook" style="font-family:monospace;font-size:0.85rem;">
-                            <small style="color:var(--text-dark);display:block;margin-top:0.5rem;">Default webhook is already configured. Enter a custom one here if needed.</small>
+                            <label>Discord Webhook URL</label>
+                            <input type="text" id="webhookUrl" placeholder="https://discord.com/api/webhooks/..." style="font-family:monospace;font-size:0.85rem;">
+                            <small style="color:var(--text-dark);display:block;margin-top:0.5rem;">Save once. Used for all announcements.</small>
                         </div>
-                        <button type="button" class="btn-submit" style="background:#7289da;margin-top:0.5rem;" onclick="saveWebhook()">💾 Save Custom Webhook</button>
+                        <button type="button" class="btn-submit" style="background:#7289da;margin-top:0.5rem;" onclick="saveWebhook()">💾 Save Webhook</button>
                         <div id="savedWebhookDisplay" style="color:#2ecc71;font-size:0.85rem;margin-top:0.5rem;"></div>
                     </div>
+
+                    <!-- Announcement Form -->
+                    <form id="announcementForm">
+                        <div class="form-group">
+                            <label>Title</label>
+                            <input type="text" id="announceTitle" placeholder="Announcement title" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Message</label>
+                            <textarea id="announceMessage" rows="5" placeholder="Announcement message..." required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Priority</label>
+                            <select id="announcePriority">
+                                <option value="normal">Normal</option>
+                                <option value="important">Important</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="display:flex;align-items:center;gap:0.5rem;">
+                            <input type="checkbox" id="sendToDiscord" style="width:auto;">
+                            <label for="sendToDiscord" style="margin-bottom:0;">📢 Also send to Discord</label>
+                        </div>
+                        <button type="submit" class="btn-submit">Post Announcement</button>
+                    </form>
+                </div>
+
+                <!-- Announcements List -->
+                <h2 style="margin-top:3rem;text-align:center;">Current Announcements</h2>
+                <div id="announcementsContainer"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer expanded" id="footer">
+        <div class="container">
+            <p>© 2026 Clover Kingdom. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script>
         // Load saved webhook on page load
         function loadWebhookField() {
             const saved = localStorage.getItem('ck_discord_webhook');
             const display = document.getElementById('savedWebhookDisplay');
-            if (saved) {
-                document.getElementById('webhookUrl').value = saved;
+            const input = document.getElementById('webhookUrl');
+            if (saved && input) {
+                input.value = saved;
                 if (display) display.textContent = '✓ Webhook saved';
             }
         }
         
         function saveWebhook() {
-            const url = document.getElementById('webhookUrl').value;
+            const input = document.getElementById('webhookUrl');
+            const display = document.getElementById('savedWebhookDisplay');
+            if (!input) return;
+            
+            const url = input.value.trim();
+            
             if (!url) {
                 alert('Please enter a webhook URL');
                 return;
             }
+            
+            if (!url.startsWith('https://discord.com/api/webhooks/')) {
+                alert('Invalid Discord webhook URL. Must start with https://discord.com/api/webhooks/');
+                return;
+            }
+            
             localStorage.setItem('ck_discord_webhook', url);
-            document.getElementById('savedWebhookDisplay').textContent = '✓ Webhook saved successfully!';
+            if (display) display.textContent = '✓ Webhook saved successfully!';
         }
         
         loadWebhookField();
