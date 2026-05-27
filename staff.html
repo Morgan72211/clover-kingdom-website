@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff - Clover Kingdom</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar collapsed" id="sidebar">
+        <div class="sidebar-header">
+            <h3>Clover Kingdom</h3>
+        </div>
+        <ul class="sidebar-links">
+            <li><a href="applications.html">Applications</a></li>
+            <li><a href="announcements.html">Announcements</a></li>
+            <li><a href="events.html">Events</a></li>
+            <li><a href="appeals.html">Appeals</a></li>
+            <li><a href="staff.html" class="active">Staff</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <a href="login.html" id="auth-link" class="btn-signin">Sign In</a>
+        </div>
+    </nav>
+
+    <!-- Toggle Button -->
+    <button class="sidebar-toggle" id="sidebarToggle" title="Toggle Sidebar">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <!-- Main Content -->
+    <main class="main-content expanded" id="mainContent">
+        <section class="page-header fade-up">
+            <div class="container">
+                <h1>👑 Staff</h1>
+                <p>The Magic Council and Kingdom Leadership</p>
+            </div>
+        </section>
+
+        <section class="page-section">
+            <div class="container">
+                <div class="staff-grid" id="publicStaffGrid">
+                    <!-- Staff loaded dynamically -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer expanded" id="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-title">Clover Kingdom</div>
+                <a href="https://discord.gg/7tUgatHjtg" target="_blank" class="discord-link">Join our Discord</a>
+                <div class="footer-credit">Made & Managed by Suki</div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script>
+        function loadPublicStaff() {
+            const container = document.getElementById('publicStaffGrid');
+            if (!container) return;
+            
+            const config = JSON.parse(localStorage.getItem('ck_accounts_config') || '{}');
+            const users = config.users || {};
+            const ranks = config.ranks || {};
+            
+            const staffList = [];
+            for (const [username, data] of Object.entries(users)) {
+                const rankData = ranks[data.rank] || {};
+                staffList.push({
+                    name: data.displayName || username,
+                    rank: data.rank,
+                    level: rankData.level || 0,
+                    color: rankData.color || '#888888'
+                });
+            }
+            staffList.sort((a, b) => b.level - a.level);
+            
+            if (staffList.length === 0) {
+                container.innerHTML = '<p style="color:var(--text-dark);text-align:center;">No staff members yet.</p>';
+                return;
+            }
+            
+            let html = '';
+            staffList.forEach(staff => {
+                html += `
+                    <div class="staff-card">
+                        <div class="staff-rank" style="color:${staff.color};border-color:${staff.color};">${staff.rank}</div>
+                        <h3>${staff.name}</h3>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        loadPublicStaff();
+    </script>
+</body>
+</html>

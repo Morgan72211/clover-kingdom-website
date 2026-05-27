@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clover Kingdom</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar collapsed" id="sidebar">
+        <div class="sidebar-header">
+            <h3>Clover Kingdom</h3>
+        </div>
+        <ul class="sidebar-links">
+            <li><a href="applications.html">Applications</a></li>
+            <li><a href="announcements.html">Announcements</a></li>
+            <li><a href="events.html">Events</a></li>
+            <li><a href="appeals.html">Appeals</a></li>
+            <li><a href="staff.html">Staff</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <a href="login.html" id="auth-link" class="btn-signin">Sign In</a>
+        </div>
+    </nav>
+
+    <!-- Toggle Button -->
+    <button class="sidebar-toggle" id="sidebarToggle" title="Toggle Sidebar">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <!-- Main Content -->
+    <main class="main-content expanded" id="mainContent">
+        <section class="hero">
+            <div class="hero-bg">
+                <div class="gradient-slide"></div>
+                <div class="logo-bg">
+                    <img src="images/logo.png" alt="Clover Kingdom Logo" id="hero-logo">
+                </div>
+            </div>
+            <div class="hero-content">
+                <h1 class="hero-title">Clover Kingdom</h1>
+                <p class="hero-subtitle">Where Magic Reigns Supreme</p>
+            </div>
+        </section>
+
+        <section class="cards-section" id="cards">
+            <div class="container">
+                <div class="cards-grid">
+                    <div class="card fade-up">
+                        <div class="card-icon">📅</div>
+                        <h3>Events</h3>
+                        <p>Join magical tournaments, quests, and kingdom-wide celebrations.</p>
+                        <a href="events.html" class="card-link">View Events →</a>
+                    </div>
+                    <div class="card fade-up">
+                        <div class="card-icon">📝</div>
+                        <h3>Appeals</h3>
+                        <p>Submit appeals for bans, warns, or mutes to our Magic Council.</p>
+                        <a href="appeals.html" class="card-link">Submit Appeal →</a>
+                    </div>
+                    <div class="card fade-up">
+                        <div class="card-icon">📋</div>
+                        <h3>Applications</h3>
+                        <p>Apply for staff positions, magic squads, and special roles.</p>
+                        <a href="applications.html" class="card-link">Apply Now →</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer expanded" id="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-title">Clover Kingdom</div>
+                <a href="https://discord.gg/7tUgatHjtg" target="_blank" class="discord-link">Join our Discord</a>
+                <div class="footer-credit">Made & Managed by Suki</div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

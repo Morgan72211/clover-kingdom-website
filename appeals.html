@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appeals - Clover Kingdom</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar collapsed" id="sidebar">
+        <div class="sidebar-header">
+            <h3>Clover Kingdom</h3>
+        </div>
+        <ul class="sidebar-links">
+            <li><a href="applications.html">Applications</a></li>
+            <li><a href="announcements.html">Announcements</a></li>
+            <li><a href="events.html">Events</a></li>
+            <li><a href="appeals.html" class="active">Appeals</a></li>
+            <li><a href="staff.html">Staff</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <a href="dashboard.html" class="btn-signin">Sign In</a>
+        </div>
+    </nav>
+
+    <!-- Toggle Button -->
+    <button class="sidebar-toggle" id="sidebarToggle" title="Toggle Sidebar">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <!-- Main Content -->
+    <main class="main-content expanded" id="mainContent">
+        <section class="page-header fade-up">
+            <div class="container">
+                <h1>📝 Appeals</h1>
+                <p>Submit an appeal to the Magic Council for review</p>
+            </div>
+        </section>
+
+        <section class="page-section">
+            <div class="container">
+                <div class="form-container fade-up">
+                    <form class="appeal-form">
+                        <div class="form-group">
+                            <label for="appeal-type">Appeal Type</label>
+                            <select id="appeal-type" name="appeal-type">
+                                <option value="ban">Ban Appeal</option>
+                                <option value="warn">Warn Appeal</option>
+                                <option value="mute">Mute Appeal</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="discord-name">Discord Username</label>
+                            <input type="text" id="discord-name" name="discord-name" placeholder="e.g. Suki#1234" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="reason">Reason for Appeal</label>
+                            <textarea id="reason" name="reason" rows="5" placeholder="Explain why you believe this action should be overturned..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn-submit">Submit Appeal</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer expanded" id="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-title">Clover Kingdom</div>
+                <a href="https://discord.gg/7tUgatHjtg" target="_blank" class="discord-link">Join our Discord</a>
+                <div class="footer-credit">Made & Managed by Suki</div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

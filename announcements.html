@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Announcements - Clover Kingdom</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar collapsed" id="sidebar">
+        <div class="sidebar-header">
+            <h3>Clover Kingdom</h3>
+        </div>
+        <ul class="sidebar-links">
+            <li><a href="applications.html">Applications</a></li>
+            <li><a href="announcements.html" class="active">Announcements</a></li>
+            <li><a href="events.html">Events</a></li>
+            <li><a href="appeals.html">Appeals</a></li>
+            <li><a href="staff.html">Staff</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <a href="login.html" id="auth-link" class="btn-signin">Sign In</a>
+        </div>
+    </nav>
+
+    <!-- Toggle Button -->
+    <button class="sidebar-toggle" id="sidebarToggle" title="Toggle Sidebar">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <!-- Main Content -->
+    <main class="main-content expanded" id="mainContent">
+        <section class="page-header fade-up">
+            <div class="container">
+                <h1>📢 Announcements</h1>
+                <p>Stay informed with the latest news from the Clover Kingdom</p>
+            </div>
+        </section>
+
+        <section class="page-section">
+            <div class="container">
+                <div class="announcements-grid" id="publicAnnouncementsContainer">
+                    <!-- Loaded dynamically -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer expanded" id="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-title">Clover Kingdom</div>
+                <a href="https://discord.gg/7tUgatHjtg" target="_blank" class="discord-link">Join our Discord</a>
+                <div class="footer-credit">Made & Managed by Suki</div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script>
+        // Load announcements for public page
+        function loadPublicAnnouncements() {
+            const container = document.getElementById('publicAnnouncementsContainer');
+            if (!container) return;
+            
+            let announcements = JSON.parse(localStorage.getItem('ck_announcements') || '[]');
+            
+            // Add defaults if empty
+            if (announcements.length === 0) {
+                announcements = [
+                    {
+                        title: 'Welcome to the New Kingdom!',
+                        message: 'The Clover Kingdom website has officially launched! Explore our magical realm and join us on this journey.',
+                        priority: 'important',
+                        date: 'May 25, 2026',
+                        id: 1001
+                    },
+                    {
+                        title: 'Magic Knight Exams',
+                        message: 'Applications for the next Magic Knight squad entrance exam are now open. Prepare your grimoires!',
+                        priority: 'normal',
+                        date: 'May 20, 2026',
+                        id: 1002
+                    },
+                    {
+                        title: 'Server Updates',
+                        message: 'New spells added to the grimoire system. Check the events page for details on upcoming training sessions.',
+                        priority: 'normal',
+                        date: 'May 15, 2026',
+                        id: 1003
+                    }
+                ];
+                localStorage.setItem('ck_announcements', JSON.stringify(announcements));
+            }
+            
+            if (announcements.length === 0) {
+                container.innerHTML = '<p style="color:var(--text-dark);text-align:center;">No announcements yet.</p>';
+                return;
+            }
+            
+            let html = '';
+            announcements.forEach(ann => {
+                const priorityColor = ann.priority === 'urgent' ? '#e74c3c' : ann.priority === 'important' ? '#f39c12' : 'var(--gold)';
+                html += `
+                    <article class="announcement-card">
+                        <div class="announcement-date" style="color:${priorityColor};">${ann.priority.toUpperCase()} • ${ann.date}</div>
+                        <h3>${ann.title}</h3>
+                        <p>${ann.message}</p>
+                    </article>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        loadPublicAnnouncements();
+    </script>
+</body>
+</html>

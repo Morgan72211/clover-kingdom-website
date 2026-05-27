@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Announcements - Clover Kingdom</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar collapsed" id="sidebar">
+        <div class="sidebar-header">
+            <h3>Clover Kingdom</h3>
+            <div class="sidebar-rank" id="sidebarRank">Rank</div>
+        </div>
+        <ul class="sidebar-links admin-links" id="adminLinks"></ul>
+        <div class="sidebar-footer">
+            <a href="dashboard.html" class="btn-signin">← Dashboard</a>
+            <a href="#" id="logoutBtn" class="btn-signin" style="margin-top:0.5rem;">Sign Out</a>
+        </div>
+    </nav>
+
+    <button class="sidebar-toggle" id="sidebarToggle" title="Toggle Sidebar">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <main class="main-content expanded" id="mainContent">
+        <section class="page-header fade-up">
+            <div class="container">
+                <h1>📢 Manage Announcements</h1>
+                <p>Post announcements to the website and Discord</p>
+            </div>
+        </section>
+
+        <section class="page-section">
+            <div class="container">
+                <div class="form-container fade-up">
+                    <!-- Discord Webhook Config -->
+                    <div class="webhook-config" style="background:rgba(114,137,218,0.1);border:1px solid rgba(114,137,218,0.3);border-radius:12px;padding:1.5rem;margin-bottom:2rem;">
+                        <h3 style="color:#7289da;margin-bottom:1rem;">Discord Integration</h3>
+                        <div class="form-group">
+                            <label>Discord Webhook URL</label>
+                            <input type="text" id="webhookUrl" placeholder="https://discord.com/api/webhooks/..." style="font-family:monospace;font-size:0.85rem;">
+                            <small style="color:var(--text-dark);display:block;margin-top:0.5rem;">Leave empty to skip Discord notification</small>
+                        </div>
+                    </div>
+
+                    <form class="appeal-form" id="announcementForm">
+                        <div class="form-group">
+                            <label>Title</label>
+                            <input type="text" id="announceTitle" placeholder="Announcement Title" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Message</label>
+                            <textarea id="announceMessage" rows="6" placeholder="Write your announcement..." required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Priority</label>
+                            <select id="announcePriority">
+                                <option value="normal">Normal</option>
+                                <option value="important">Important</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-submit">Post Announcement</button>
+                    </form>
+
+                    <div class="announcements-list" id="announcementsList" style="margin-top:3rem;">
+                        <h2 style="color:var(--gold);font-family:'Cinzel Decorative',cursive;margin-bottom:1.5rem;">Posted Announcements</h2>
+                        <div id="announcementsContainer"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer expanded" id="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-title">Clover Kingdom</div>
+                <a href="https://discord.gg/7tUgatHjtg" target="_blank" class="discord-link">Join our Discord</a>
+                <div class="footer-credit">Made & Managed by Suki</div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

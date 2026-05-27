@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Appeals - Clover Kingdom</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar collapsed" id="sidebar">
+        <div class="sidebar-header">
+            <h3>Clover Kingdom</h3>
+            <div class="sidebar-rank" id="sidebarRank">Rank</div>
+        </div>
+        <ul class="sidebar-links admin-links" id="adminLinks"></ul>
+        <div class="sidebar-footer">
+            <a href="dashboard.html" class="btn-signin">← Dashboard</a>
+            <a href="#" id="logoutBtn" class="btn-signin" style="margin-top:0.5rem;">Sign Out</a>
+        </div>
+    </nav>
+
+    <button class="sidebar-toggle" id="sidebarToggle" title="Toggle Sidebar">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <main class="main-content expanded" id="mainContent">
+        <section class="page-header fade-up">
+            <div class="container">
+                <h1>📝 Review Appeals</h1>
+                <p>Manage ban, warn, and mute appeals</p>
+            </div>
+        </section>
+
+        <section class="page-section">
+            <div class="container">
+                <div class="app-filters fade-up" style="display:flex;gap:1rem;margin-bottom:2rem;justify-content:center;">
+                    <button class="filter-btn active" onclick="filterAppeals('all')" id="filter-all">All</button>
+                    <button class="filter-btn" onclick="filterAppeals('pending')" id="filter-pending">Pending</button>
+                    <button class="filter-btn" onclick="filterAppeals('approved')" id="filter-approved">Approved</button>
+                    <button class="filter-btn" onclick="filterAppeals('denied')" id="filter-denied">Denied</button>
+                </div>
+                <div class="applications-list fade-up" id="appealsContainer"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer expanded" id="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-title">Clover Kingdom</div>
+                <a href="https://discord.gg/7tUgatHjtg" target="_blank" class="discord-link">Join our Discord</a>
+                <div class="footer-credit">Made & Managed by Suki</div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

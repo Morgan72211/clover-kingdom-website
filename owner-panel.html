@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Panel - Clover Kingdom</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar collapsed" id="sidebar">
+        <div class="sidebar-header">
+            <h3>Clover Kingdom</h3>
+            <div class="sidebar-rank" id="sidebarRank">Rank</div>
+        </div>
+        <ul class="sidebar-links admin-links" id="adminLinks"></ul>
+        <div class="sidebar-footer">
+            <a href="dashboard.html" class="btn-signin">← Dashboard</a>
+            <a href="#" id="logoutBtn" class="btn-signin" style="margin-top:0.5rem;">Sign Out</a>
+        </div>
+    </nav>
+
+    <button class="sidebar-toggle" id="sidebarToggle" title="Toggle Sidebar">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <main class="main-content expanded" id="mainContent">
+        <section class="page-header fade-up">
+            <div class="container">
+                <h1>👑 Owner Panel</h1>
+                <p>Kingdom administration and system control</p>
+            </div>
+        </section>
+
+        <section class="page-section">
+            <div class="container">
+                <!-- System Stats -->
+                <div class="stats-grid fade-up" style="margin-bottom:3rem;">
+                    <div class="stat-card">
+                        <div class="stat-number" id="sysTotalUsers">0</div>
+                        <div class="stat-label">Total Users</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="sysTotalApps">0</div>
+                        <div class="stat-label">Total Applications</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="sysTotalEvents">0</div>
+                        <div class="stat-label">Total Events</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="sysTotalAnnounce">0</div>
+                        <div class="stat-label">Announcements</div>
+                    </div>
+                </div>
+
+                <!-- Owner Actions -->
+                <div class="quick-actions fade-up" style="margin-bottom:3rem;">
+                    <h2 style="color:var(--gold);font-family:'Cinzel Decorative',cursive;text-align:center;margin-bottom:1.5rem;">Owner Actions</h2>
+                    <div class="actions-grid">
+                        <button class="action-btn owner" onclick="openResetDataModal()"><span style="font-size:2rem;margin-bottom:0.5rem;">🗑️</span><br>Reset Data</button>
+                        <button class="action-btn owner" onclick="openExportDataModal()"><span style="font-size:2rem;margin-bottom:0.5rem;">📤</span><br>Export Data</button>
+                        <button class="action-btn owner" onclick="openImportDataModal()"><span style="font-size:2rem;margin-bottom:0.5rem;">📥</span><br>Import Data</button>
+                        <button class="action-btn owner" onclick="openSiteSettingsModal()"><span style="font-size:2rem;margin-bottom:0.5rem;">⚙️</span><br>Site Settings</button>
+                    </div>
+                </div>
+
+                <!-- Activity Log -->
+                <div class="activity-section fade-up">
+                    <h2 style="color:var(--gold);font-family:'Cinzel Decorative',cursive;text-align:center;margin-bottom:1.5rem;">System Activity Log</h2>
+                    <div class="activity-log" id="systemActivityLog"></div>
+                    <button class="btn-submit" style="width:auto;margin-top:1rem;" onclick="clearActivityLog()">Clear Log</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer expanded" id="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-title">Clover Kingdom</div>
+                <a href="https://discord.gg/7tUgatHjtg" target="_blank" class="discord-link">Join our Discord</a>
+                <div class="footer-credit">Made & Managed by Suki</div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
