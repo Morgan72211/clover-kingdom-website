@@ -31,6 +31,32 @@ function saveAccountsConfig() {
 
 let ACCOUNTS_CONFIG = loadAccountsConfig();
 
+function saveWebhook() {
+    const webhookInput = document.getElementById('webhookUrl');
+    if (!webhookInput) return;
+    
+    const url = webhookInput.value.trim();
+    
+    if (!url) {
+        alert('Please enter a webhook URL');
+        return;
+    }
+    
+    if (!url.startsWith('https://discord.com/api/webhooks/')) {
+        alert('Invalid Discord webhook URL. Must start with https://discord.com/api/webhooks/');
+        return;
+    }
+    
+    localStorage.setItem('ck_discord_webhook', url);
+    alert('Webhook saved successfully!');
+    
+    const statusEl = document.getElementById('webhookStatus');
+    if (statusEl) {
+        statusEl.textContent = '✓ Webhook saved!';
+        statusEl.style.color = '#2ecc71';
+    }
+}
+
 // ============================================
 // SESSION UTILS
 // ============================================
