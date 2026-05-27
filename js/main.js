@@ -13,7 +13,7 @@ function loadAccountsConfig() {
                 password: "CloverKingdom_SilverSovereign",
                 rank: "Owner",
                 displayName: "Suki"
-            "Suki": {
+            "Gale": {
                 password: "PhoenixM",
                 rank: "Wizard King",
                 displayName: "Gale"
