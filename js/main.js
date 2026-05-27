@@ -31,32 +31,6 @@ function saveAccountsConfig() {
 
 let ACCOUNTS_CONFIG = loadAccountsConfig();
 
-function saveWebhook() {
-    const webhookInput = document.getElementById('webhookUrl');
-    if (!webhookInput) return;
-    
-    const url = webhookInput.value.trim();
-    
-    if (!url) {
-        alert('Please enter a webhook URL');
-        return;
-    }
-    
-    if (!url.startsWith('https://discord.com/api/webhooks/')) {
-        alert('Invalid Discord webhook URL. Must start with https://discord.com/api/webhooks/');
-        return;
-    }
-    
-    localStorage.setItem('ck_discord_webhook', url);
-    alert('Webhook saved successfully!');
-    
-    const statusEl = document.getElementById('webhookStatus');
-    if (statusEl) {
-        statusEl.textContent = '✓ Webhook saved!';
-        statusEl.style.color = '#2ecc71';
-    }
-}
-
 // ============================================
 // SESSION UTILS
 // ============================================
@@ -106,7 +80,7 @@ function getRankLevel(rank) {
 // ============================================
 // DISCORD WEBHOOK
 // ============================================
-console.log("TEST")
+
 const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1366958369926660196/EXAMPLE_TOKEN';
 
 async function sendToDiscord(webhookUrl, title, message, priority) {
@@ -436,7 +410,7 @@ function deleteEvent(id) {
 }
 
 // ============================================
-// ANNOUNCEMENTS
+// ANNOUNCEMENTS (FIXED: sendToDiscordChecked)
 // ============================================
 
 const announcementForm = document.getElementById('announcementForm');
@@ -449,7 +423,7 @@ if (announcementForm) {
         const title = document.getElementById('announceTitle').value;
         const message = document.getElementById('announceMessage').value;
         const priority = document.getElementById('announcePriority').value;
-        const sendToDiscord = document.getElementById('sendToDiscord').checked;
+        const sendToDiscordChecked = document.getElementById('sendToDiscord').checked;
         const webhookUrl = localStorage.getItem('ck_discord_webhook') || DISCORD_WEBHOOK_URL || '';
         
         const announcements = JSON.parse(localStorage.getItem('ck_announcements') || '[]');
@@ -462,14 +436,14 @@ if (announcementForm) {
         });
         localStorage.setItem('ck_announcements', JSON.stringify(announcements));
         
-        if (sendToDiscord && webhookUrl) {
+        if (sendToDiscordChecked && webhookUrl) {
             try {
                 await sendToDiscord(webhookUrl, title, message, priority);
                 alert('Announcement posted to website and Discord!');
             } catch (err) {
                 alert('Saved to website but Discord webhook failed: ' + err.message);
             }
-        } else if (sendToDiscord && !webhookUrl) {
+        } else if (sendToDiscordChecked && !webhookUrl) {
             alert('Announcement saved to website! (No webhook configured - save one above)');
         } else {
             alert('Announcement posted to website only!');
