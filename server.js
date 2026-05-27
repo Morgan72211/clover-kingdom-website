@@ -1,8 +1,8 @@
 const express = require('express');
 const path = require('path');
-const fetch = require('node-fetch');
 const app = express();
 const PORT = process.env.PORT || 3000;
+const fetch = require('node-fetch');
 
 // Parse JSON request bodies (needed for the webhook proxy)
 app.use(express.json());
