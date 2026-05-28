@@ -1016,12 +1016,9 @@ body {
         transform: translateX(calc(-1 * var(--sidebar-width)));
     }
 
-    .sidebar.active {
-        transform: translateX(0) !important;
+    .sidebar:not(.collapsed) {
+        transform: translateX(0);
     }
-    
-    /* ... rest of mobile styles ... */
-}
 
     .sidebar-toggle {
         left: 1rem;
