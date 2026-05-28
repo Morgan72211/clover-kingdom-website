@@ -193,18 +193,21 @@ function toggleSidebar() {
     
     if (sidebarOpen) {
         sidebar.classList.remove('collapsed');
+        sidebar.classList.add('active');        // ADD THIS
         if (sidebarToggle) {
             sidebarToggle.classList.add('shifted');
             sidebarToggle.classList.add('active');
         }
     } else {
         sidebar.classList.add('collapsed');
+        sidebar.classList.remove('active');     // ADD THIS
         if (sidebarToggle) {
             sidebarToggle.classList.remove('shifted');
             sidebarToggle.classList.remove('active');
         }
     }
-    
+    // ... rest stays the same
+}    
     if (mainContent) {
         mainContent.classList.toggle('expanded', !sidebarOpen);
     }

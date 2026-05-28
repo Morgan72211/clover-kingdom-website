@@ -1017,8 +1017,11 @@ body {
     }
 
     .sidebar.active {
-        transform: translateX(0);
+        transform: translateX(0) !important;
     }
+    
+    /* ... rest of mobile styles ... */
+}
 
     .sidebar-toggle {
         left: 1rem;
