@@ -718,6 +718,17 @@ function removeStaff(username) {
         return;
     }
     
+    // FIX: Can't remove someone with higher or equal rank
+    const session = getSession();
+    const targetUser = ACCOUNTS_CONFIG.users[username];
+    if (targetUser) {
+        const targetLevel = getRankLevel(targetUser.rank);
+        if (targetLevel >= session.level) {
+            alert('You cannot remove someone with equal or higher rank than yourself!');
+            return;
+        }
+    }
+    
     ACCOUNTS_CONFIG = loadAccountsConfig();
     if (ACCOUNTS_CONFIG.users[username]) {
         delete ACCOUNTS_CONFIG.users[username];
@@ -817,13 +828,27 @@ function openAddStaffModal() {
         const rank = document.getElementById('addStaffRank').value;
         const session = getSession();
         
+        // Can't add someone with higher rank than yourself
         const newRankLevel = getRankLevel(rank);
         if (newRankLevel > session.level) {
             alert('You cannot add someone with a higher rank than your own!');
             return;
         }
         
+        // Can't add someone with equal rank unless you're Owner
+        if (newRankLevel === session.level && session.rank !== 'Owner') {
+            alert('You cannot add someone with the same rank as yourself!');
+            return;
+        }
+        
         ACCOUNTS_CONFIG = loadAccountsConfig();
+        
+        // Can't add duplicate username
+        if (ACCOUNTS_CONFIG.users[username]) {
+            alert('A user with that username already exists!');
+            return;
+        }
+        
         ACCOUNTS_CONFIG.users[username] = {
             password: pass,
             rank: rank,
@@ -832,11 +857,11 @@ function openAddStaffModal() {
         saveAccountsConfig();
         
         alert('Staff member ' + name + ' added as ' + rank + '!');
+        logActivity(session.username + ' added ' + name + ' as ' + rank);
         closeAddStaffModal();
         loadStaffList();
     });
 }
-
 function closeAddStaffModal() {
     const modal = document.getElementById('addStaffModal');
     if (modal) modal.remove();
@@ -892,16 +917,36 @@ function closeRemoveStaffModal() {
 function openChangeRankModal() {
     const config = loadAccountsConfig();
     const users = config.users;
+    const session = getSession();
+    
+    // Only show users you have permission to modify (lower rank than you)
     let userOptions = '';
     for (const [username, data] of Object.entries(users)) {
-        userOptions += '<option value="' + username + '">' + (data.displayName || username) + ' (' + data.rank + ')</option>';
+        const userLevel = getRankLevel(data.rank);
+        // Can only modify users with LOWER rank than yourself
+        if (userLevel < session.level) {
+            userOptions += '<option value="' + username + '">' + (data.displayName || username) + ' (' + data.rank + ')</option>';
+        }
     }
     
-    const rankOptions = '<option value="Vice Captain">Vice Captain</option>' +
-        '<option value="Captain">Captain</option>' +
-        '<option value="Sovereign">Sovereign</option>' +
-        '<option value="Wizard King">Wizard King</option>' +
-        '<option value="Owner">Owner</option>';
+    // If no options, you can't modify anyone
+    if (!userOptions) {
+        alert('You do not have permission to modify any staff members.');
+        return;
+    }
+    
+    // Only show ranks at or below your own
+    const availableRanks = [];
+    for (const [rankName, rankData] of Object.entries(config.ranks)) {
+        if (rankData.level <= session.level) {
+            availableRanks.push(rankName);
+        }
+    }
+    
+    let rankOptions = '';
+    availableRanks.forEach(function(rankName) {
+        rankOptions += '<option value="' + rankName + '">' + rankName + '</option>';
+    });
     
     const existing = document.getElementById('changeRankModal');
     if (existing) existing.remove();
@@ -930,17 +975,30 @@ function openChangeRankModal() {
         const newRank = document.getElementById('changeRankNew').value;
         const session = getSession();
         
-        if (username === 'Suki' && session.rank !== 'Owner') {
-            alert('Cannot modify the Owner!');
-            return;
+        // Re-verify: Can't modify someone with equal or higher rank
+        const targetUser = ACCOUNTS_CONFIG.users[username];
+        if (targetUser) {
+            const targetLevel = getRankLevel(targetUser.rank);
+            if (targetLevel >= session.level) {
+                alert('You cannot modify someone with equal or higher rank than yourself!');
+                return;
+            }
         }
         
+        // Can't assign rank higher than your own
         const newRankLevel = getRankLevel(newRank);
         if (newRankLevel > session.level) {
-            alert('You cannot promote someone to a rank higher than your own!');
+            alert('You cannot assign a rank higher than your own!');
             return;
         }
         
+        // Can't assign equal rank unless you're Owner
+        if (newRankLevel === session.level && session.rank !== 'Owner') {
+            alert('You cannot assign the same rank as yourself!');
+            return;
+        }
+        
+        // Only Owner can assign Owner rank
         if (newRank === 'Owner' && session.rank !== 'Owner') {
             alert('Only the Owner can assign the Owner rank!');
             return;
@@ -948,15 +1006,16 @@ function openChangeRankModal() {
         
         ACCOUNTS_CONFIG = loadAccountsConfig();
         if (ACCOUNTS_CONFIG.users[username]) {
+            const oldRank = ACCOUNTS_CONFIG.users[username].rank;
             ACCOUNTS_CONFIG.users[username].rank = newRank;
             saveAccountsConfig();
             alert(username + ' is now ' + newRank + '!');
+            logActivity(session.username + ' changed ' + username + ' from ' + oldRank + ' to ' + newRank);
             closeChangeRankModal();
             loadStaffList();
         }
     });
 }
-
 function closeChangeRankModal() {
     const modal = document.getElementById('changeRankModal');
     if (modal) modal.remove();
