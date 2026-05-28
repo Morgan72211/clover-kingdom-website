@@ -1074,4 +1074,16 @@ body {
     .actions-grid {
         grid-template-columns: 1fr;
     }
+/* Add this if missing for mobile */
+@media (max-width: 768px) {
+    .login-container {
+        width: 90%;
+        padding: 1.5rem;
+    }
+    
+    input, button {
+        font-size: 16px; /* Prevents iOS zoom on focus */
+        min-height: 44px; /* Better tap targets */
+    }
+}
 }

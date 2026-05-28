@@ -253,12 +253,15 @@ function initSidebarRank() {
             adminHTML += '<li><a href="review-appeals.html">Review Appeals</a></li>';
             adminHTML += '<li><a href="edit-staff.html">Edit Staff</a></li>';
         }
-        
         if (level >= 4) {
-            adminHTML += '<li class="admin-label">High Command</li>';
-            adminHTML += '<li><a href="owner-panel.html">👑 Owner Panel</a></li>';
-        }
-        
+    adminHTML += '<li class="admin-label">High Command</li>';
+    adminHTML += '<li><a href="owner-panel.html">👑 Owner Panel</a></li>';
+}
+
+	if (level >= 5) {
+    		adminHTML += '<li class="admin-label">High Command</li>';
+    		adminHTML += '<li><a href="owner-panel.html">👑 Owner Panel</a></li>';
+	}        
         adminLinks.innerHTML = adminHTML;
     }
 }
@@ -311,9 +314,10 @@ function initDashboard() {
             actionsHTML += '<a href="edit-staff.html" class="action-btn"><span style="font-size:2rem;margin-bottom:0.5rem;">✏️</span><br>Edit Staff</a>';
         }
         
-        if (level >= 5) {
-            actionsHTML += '<a href="owner-panel.html" class="action-btn owner"><span style="font-size:2rem;margin-bottom:0.5rem;">👑</span><br>Owner Panel</a>';
-        }
+       // Change this:
+if (level >= 5) {
+    actionsHTML += '<a href="owner-panel.html" class="action-btn owner">...';
+}
         
         quickActions.innerHTML = actionsHTML;
     }
@@ -932,6 +936,35 @@ function openChangeRankModal() {
         }
     });
 }
+document.getElementById('changeRankForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const username = document.getElementById('changeRankUser').value;
+    const newRank = document.getElementById('changeRankNew').value;
+    const session = getSession();
+    
+    // NEW: Prevent changing to a higher rank than yourself
+    const newRankLevel = getRankLevel(newRank);
+    if (newRankLevel > session.level) {
+        alert('You cannot promote someone to a rank higher than your own!');
+        return;
+    }
+    
+    // NEW: Prevent changing Owner rank unless you're Owner
+    if (newRank === 'Owner' && session.rank !== 'Owner') {
+        alert('Only the Owner can assign the Owner rank!');
+        return;
+    }
+    
+    ACCOUNTS_CONFIG = loadAccountsConfig();
+    if (ACCOUNTS_CONFIG.users[username]) {
+        ACCOUNTS_CONFIG.users[username].rank = newRank;
+        saveAccountsConfig();
+        alert(username + ' is now ' + newRank + '!');
+        closeChangeRankModal();
+        loadStaffList();
+    }
+});
 
 function closeChangeRankModal() {
     const modal = document.getElementById('changeRankModal');
