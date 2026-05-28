@@ -249,7 +249,7 @@ body {
     font-size: 5rem;
     font-weight: 900;
     color: var(--gold);
-    text-shadow: 
+    text-shadow:
         0 0 20px rgba(136, 136, 136, 0.5),
         0 0 40px rgba(136, 136, 136, 0.3),
         0 0 60px rgba(136, 136, 136, 0.1);
@@ -982,19 +982,19 @@ body {
 }
 
 @keyframes float {
-    0% { 
-        transform: translateY(100%) scale(0); 
-        opacity: 0; 
+    0% {
+        transform: translateY(100%) scale(0);
+        opacity: 0;
     }
-    20% { 
-        opacity: 1; 
+    20% {
+        opacity: 1;
     }
-    80% { 
-        opacity: 1; 
+    80% {
+        opacity: 1;
     }
-    100% { 
-        transform: translateY(-100%) scale(1); 
-        opacity: 0; 
+    100% {
+        transform: translateY(-100%) scale(1);
+        opacity: 0;
     }
 }
 
@@ -1015,54 +1015,65 @@ body {
     .sidebar {
         transform: translateX(calc(-1 * var(--sidebar-width)));
     }
-    
+
     .sidebar.active {
         transform: translateX(0);
     }
-    
+
     .sidebar-toggle {
         left: 1rem;
     }
-    
+
     .sidebar-toggle.shifted {
         left: calc(var(--sidebar-width) + 1rem);
     }
-    
+
     .main-content,
     .footer,
     .dashboard-main {
         margin-left: 0;
     }
-    
+
     .hero-title {
         font-size: 3rem;
     }
-    
+
     .page-header h1 {
         font-size: 2rem;
     }
-    
+
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .actions-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .cards-grid,
     .announcements-grid,
     .staff-grid {
         grid-template-columns: 1fr;
     }
-    
-    .success-message {
-        padding: 2.5rem 2rem;
-        margin: 1rem;
+
+    /* Mobile login fixes */
+    .login-form,
+    .form-container {
+        width: 90% !important;
+        padding: 1.5rem !important;
+        margin: 1rem auto !important;
     }
-    
-    .success-message h1 {
-        font-size: 1.8rem;
+
+    input, select, textarea, button, .btn-submit {
+        font-size: 16px !important;
+        min-height: 44px;
+        padding: 0.75rem 1rem;
+    }
+
+    .modal {
+        width: 90% !important;
+        max-height: 80vh;
+        overflow-y: auto;
     }
 }
 
@@ -1070,20 +1081,8 @@ body {
     .stats-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .actions-grid {
         grid-template-columns: 1fr;
     }
-/* Add this if missing for mobile */
-@media (max-width: 768px) {
-    .login-container {
-        width: 90%;
-        padding: 1.5rem;
-    }
-    
-    input, button {
-        font-size: 16px; /* Prevents iOS zoom on focus */
-        min-height: 44px; /* Better tap targets */
-    }
-}
 }

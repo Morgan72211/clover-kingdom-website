@@ -14,11 +14,11 @@ function loadAccountsConfig() {
                 rank: "Owner",
                 displayName: "Suki"
             },
-        "Gale": {                    // <-- ADD THIS
-            password: "PhoenixM",
-            rank: "Wizard King",
-            displayName: "Gale"
-        }
+            "Gale": {
+                password: "PhoenixM",
+                rank: "Wizard King",
+                displayName: "Gale"
+            }
         },
         ranks: {
             "Vice Captain": { level: 1, color: "#7f8c8d" },
@@ -253,15 +253,13 @@ function initSidebarRank() {
             adminHTML += '<li><a href="review-appeals.html">Review Appeals</a></li>';
             adminHTML += '<li><a href="edit-staff.html">Edit Staff</a></li>';
         }
-        if (level >= 4) {
-    adminHTML += '<li class="admin-label">High Command</li>';
-    adminHTML += '<li><a href="owner-panel.html">👑 Owner Panel</a></li>';
-}
-
-	if (level >= 5) {
-    		adminHTML += '<li class="admin-label">High Command</li>';
-    		adminHTML += '<li><a href="owner-panel.html">👑 Owner Panel</a></li>';
-	}        
+        
+        // FIX: Owner Panel only for Owner (level 5), not Wizard King (level 4)
+        if (level >= 5) {
+            adminHTML += '<li class="admin-label">High Command</li>';
+            adminHTML += '<li><a href="owner-panel.html">👑 Owner Panel</a></li>';
+        }
+        
         adminLinks.innerHTML = adminHTML;
     }
 }
@@ -314,10 +312,10 @@ function initDashboard() {
             actionsHTML += '<a href="edit-staff.html" class="action-btn"><span style="font-size:2rem;margin-bottom:0.5rem;">✏️</span><br>Edit Staff</a>';
         }
         
-       // Change this:
-if (level >= 5) {
-    actionsHTML += '<a href="owner-panel.html" class="action-btn owner">...';
-}
+        // FIX: Owner Panel only for Owner (level 5)
+        if (level >= 5) {
+            actionsHTML += '<a href="owner-panel.html" class="action-btn owner"><span style="font-size:2rem;margin-bottom:0.5rem;">👑</span><br>Owner Panel</a>';
+        }
         
         quickActions.innerHTML = actionsHTML;
     }
@@ -419,7 +417,7 @@ function deleteEvent(id) {
 }
 
 // ============================================
-// ANNOUNCEMENTS (FIXED: sendToDiscordChecked)
+// ANNOUNCEMENTS
 // ============================================
 
 const announcementForm = document.getElementById('announcementForm');
@@ -819,6 +817,14 @@ function openAddStaffModal() {
         const name = document.getElementById('addStaffName').value;
         const pass = document.getElementById('addStaffPass').value;
         const rank = document.getElementById('addStaffRank').value;
+        const session = getSession();
+        
+        // FIX: Can't add someone with higher rank than yourself
+        const newRankLevel = getRankLevel(rank);
+        if (newRankLevel > session.level) {
+            alert('You cannot add someone with a higher rank than your own!');
+            return;
+        }
         
         ACCOUNTS_CONFIG = loadAccountsConfig();
         ACCOUNTS_CONFIG.users[username] = {
@@ -925,6 +931,26 @@ function openChangeRankModal() {
         
         const username = document.getElementById('changeRankUser').value;
         const newRank = document.getElementById('changeRankNew').value;
+        const session = getSession();
+        
+        // FIX: Prevent changing Suki's rank unless you're Owner
+        if (username === 'Suki' && session.rank !== 'Owner') {
+            alert('Cannot modify the Owner!');
+            return;
+        }
+        
+        // FIX: Prevent changing to a higher rank than yourself
+        const newRankLevel = getRankLevel(newRank);
+        if (newRankLevel > session.level) {
+            alert('You cannot promote someone to a rank higher than your own!');
+            return;
+        }
+        
+        // FIX: Only Owner can assign Owner rank
+        if (newRank === 'Owner' && session.rank !== 'Owner') {
+            alert('Only the Owner can assign the Owner rank!');
+            return;
+        }
         
         ACCOUNTS_CONFIG = loadAccountsConfig();
         if (ACCOUNTS_CONFIG.users[username]) {
@@ -936,35 +962,6 @@ function openChangeRankModal() {
         }
     });
 }
-document.getElementById('changeRankForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const username = document.getElementById('changeRankUser').value;
-    const newRank = document.getElementById('changeRankNew').value;
-    const session = getSession();
-    
-    // NEW: Prevent changing to a higher rank than yourself
-    const newRankLevel = getRankLevel(newRank);
-    if (newRankLevel > session.level) {
-        alert('You cannot promote someone to a rank higher than your own!');
-        return;
-    }
-    
-    // NEW: Prevent changing Owner rank unless you're Owner
-    if (newRank === 'Owner' && session.rank !== 'Owner') {
-        alert('Only the Owner can assign the Owner rank!');
-        return;
-    }
-    
-    ACCOUNTS_CONFIG = loadAccountsConfig();
-    if (ACCOUNTS_CONFIG.users[username]) {
-        ACCOUNTS_CONFIG.users[username].rank = newRank;
-        saveAccountsConfig();
-        alert(username + ' is now ' + newRank + '!');
-        closeChangeRankModal();
-        loadStaffList();
-    }
-});
 
 function closeChangeRankModal() {
     const modal = document.getElementById('changeRankModal');
@@ -977,6 +974,7 @@ function closeChangeRankModal() {
 
 function initOwnerPanel() {
     const session = getSession();
+    // FIX: Only Owner (level 5) can access, not Wizard King (level 4)
     if (!session || session.level < 5) {
         window.location.href = 'dashboard.html';
         return;
