@@ -34,8 +34,9 @@ app.use(cookieSession({
   name: 'clover_session',
   keys: [process.env.SESSION_SECRET || 'magic_emperor_secret_phrase'],
   maxAge: 24 * 60 * 60 * 1000, // 24 hours
-  secure: false, // Set to true if running behind HTTPS in production
-  httpOnly: true
+  secure: process.env.DEV_MODE !== 'true', // secure cookies over HTTPS in production (Render)
+  httpOnly: true,
+  sameSite: 'lax'
 }));
 
 // Register Routes
