@@ -29,6 +29,16 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Disable caching for API and Auth routes to prevent stale login states
+app.use((req, res, next) => {
+  if (req.url.startsWith('/api') || req.url.startsWith('/auth')) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  next();
+});
+
 // Session management
 app.use(cookieSession({
   name: 'clover_session',
