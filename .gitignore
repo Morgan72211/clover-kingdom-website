@@ -1,0 +1,21 @@
+# Node dependency directory
+node_modules/
+
+# Production build directory
+dist/
+
+# Local configuration and environment secrets
+.env
+.env.local
+.env.*.local
+
+# Local SQLite databases and temp logs
+server/clover.db
+server/clover.db-shm
+server/clover.db-wal
+server/clover.db-journal
+*.log
+
+# System files
+.DS_Store
+Thumbs.db

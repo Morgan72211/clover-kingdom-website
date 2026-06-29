@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clover Kingdom Portal</title>
+  <meta name="description" content="Discover the magic, apply for squads, submit ban appeals, and stay updated with Clover Kingdom community announcements.">
+  
+  <!-- Modern Google Fonts (Cinzel for Magic headings, Plus Jakarta Sans for UI text) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- CSS Link -->
+  <link rel="stylesheet" href="/src/css/variables.css">
+  <link rel="stylesheet" href="/src/css/main.css">
+</head>
+<body class="theme-dark">
+  <!-- Interactive Canvas Particles -->
+  <canvas id="particle-canvas" class="particle-canvas"></canvas>
+  
+  <!-- Glow Backdrops -->
+  <div class="glow-bg" id="glow-bg"></div>
+  <div class="grid-bg"></div>
+
+  <!-- Header / Navigation -->
+  <header class="main-header" id="main-header">
+    <div class="container header-container">
+      <a href="/" class="logo spa-link" id="logo-link">
+        <img class="logo-img" src="/assets/images/CloverKingdomLogo.png" alt="Clover Kingdom Logo">
+        <span class="logo-text">Clover<span class="highlight">Kingdom</span></span>
+      </a>
+      <nav class="nav-menu" id="nav-menu" aria-label="Main Navigation">
+        <ul class="nav-list">
+          <li><a href="/" class="nav-link spa-link" id="nav-home">Home</a></li>
+          <li><a href="/apply" class="nav-link spa-link" id="nav-apply">Apply</a></li>
+          <li><a href="/appeal" class="nav-link spa-link" id="nav-appeal">Appeal</a></li>
+          <li><a href="/admin" class="nav-link spa-link" id="nav-admin" style="display: none;">Dashboard</a></li>
+        </ul>
+      </nav>
+      <div class="header-actions">
+        <!-- Auth Button -->
+        <button class="btn btn-secondary btn-sm" id="btn-login-status">Checking...</button>
+        <!-- Light/Dark Mode toggle -->
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle Theme" title="Toggle dark/light mode">
+          <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+          <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- SPA View Injector -->
+  <main id="app-view">
+    <!-- Dynamic views will be loaded here -->
+    <div class="container loading-view">
+      <div class="magic-circle-container">
+        <div class="magic-circle outer" style="opacity: 0.1;"></div>
+        <div class="exam-spinner"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="main-footer" id="main-footer">
+    <div class="container footer-container">
+      <p>&copy; 2026 Clover Kingdom Silver Sovereign. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="/appeal" class="footer-link spa-link" id="footer-appeal">Ban Appeal</a>
+        <a href="/apply" class="footer-link spa-link" id="footer-apply">Join Magic Knights</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Javascript entry module -->
+  <script type="module" src="/src/js/main.js"></script>
+</body>
+</html>
