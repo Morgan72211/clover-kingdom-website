@@ -39,7 +39,7 @@ export async function HomeView(container, router) {
           </p>
           <div class="hero-actions">
             <a href="/apply" class="btn btn-primary spa-link" id="cta-find-grimoire">Join the Magic Knights</a>
-            <a href="#squads" class="btn btn-secondary">Explore Squads</a>
+            <a href="#squads" class="btn btn-secondary" id="btn-explore-squads">Explore Squads</a>
           </div>
         </div>
         <div class="hero-visual">
@@ -229,6 +229,18 @@ export async function HomeView(container, router) {
         btnInitiate.disabled = false;
         btnInitiate.textContent = 'Attune Again';
       }, 2000);
+    });
+  }
+
+  // Wire up Explore Squads smooth scroll
+  const btnExplore = container.querySelector('#btn-explore-squads');
+  if (btnExplore) {
+    btnExplore.addEventListener('click', (e) => {
+      e.preventDefault();
+      const squadsSection = container.querySelector('#squads');
+      if (squadsSection) {
+        squadsSection.scrollIntoView({ behavior: 'smooth' });
+      }
     });
   }
 }
