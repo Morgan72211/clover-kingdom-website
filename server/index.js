@@ -16,6 +16,9 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Trust reverse proxy for secure cookie session forwarding (Render, Heroku, etc.)
+app.set('trust proxy', 1);
+
 // Enable CORS
 app.use(cors({
   origin: 'http://localhost:3000',
