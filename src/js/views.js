@@ -216,12 +216,60 @@ export async function HomeView(container, router) {
       btnInitiate.textContent = 'Communing...';
 
       setTimeout(() => {
-        const selection = MAGIC_ATTRIBUTES[Math.floor(Math.random() * MAGIC_ATTRIBUTES.length)];
+        // Group attributes dynamically by their rarity tag from the config
+        const common = MAGIC_ATTRIBUTES.filter(a => a.name.includes('(Common)'));
+        const uncommon = MAGIC_ATTRIBUTES.filter(a => a.name.includes('(Uncommon)'));
+        const rare = MAGIC_ATTRIBUTES.filter(a => a.name.includes('(Rare)'));
+        const legendary = MAGIC_ATTRIBUTES.filter(a => a.name.includes('(Legendary)'));
+        const mythical = MAGIC_ATTRIBUTES.filter(a => a.name.includes('(Mythical)'));
+        const divine = MAGIC_ATTRIBUTES.filter(a => a.name.includes('(Divine)'));
+
+        // Roll rarity threshold (Divine: 1%, Mythical: 5%, Legendary: 9%, Rare: 15%, Uncommon: 25%, Common: 45%)
+        const roll = Math.random();
+        let selectedGroup = common;
+        let rarityLabel = 'Common';
+        let rarityColor = '#10b981'; // Green
+
+        if (roll < 0.01) {
+          selectedGroup = divine.length ? divine : common;
+          rarityLabel = 'Divine';
+          rarityColor = '#ff4757'; // Red
+        } else if (roll < 0.06) {
+          selectedGroup = mythical.length ? mythical : common;
+          rarityLabel = 'Mythical';
+          rarityColor = '#f59e0b'; // Gold
+        } else if (roll < 0.15) {
+          selectedGroup = legendary.length ? legendary : common;
+          rarityLabel = 'Legendary';
+          rarityColor = '#8b5cf6'; // Purple
+        } else if (roll < 0.30) {
+          selectedGroup = rare.length ? rare : common;
+          rarityLabel = 'Rare';
+          rarityColor = '#ec4899'; // Pink
+        } else if (roll < 0.55) {
+          selectedGroup = uncommon.length ? uncommon : common;
+          rarityLabel = 'Uncommon';
+          rarityColor = '#3b82f6'; // Blue
+        } else {
+          selectedGroup = common;
+          rarityLabel = 'Common';
+          rarityColor = '#10b981';
+        }
+
+        // Pick a random attribute within the rolled rarity pool
+        const selection = selectedGroup[Math.floor(Math.random() * selectedGroup.length)] || MAGIC_ATTRIBUTES[0];
+        
+        // Strip the rarity bracket from the name for a cleaner title rendering
+        const displayName = selection.name.split(' (')[0];
+
         displayZone.innerHTML = `
-          <div class="result-card">
-            <div class="card-icon" style="font-size: 4rem; filter: drop-shadow(0 0 15px ${selection.color}88)">${selection.icon}</div>
-            <h3 class="result-attribute" style="background: linear-gradient(135deg, ${selection.color} 0%, #fff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-              ${selection.name}
+          <div class="result-card" style="border-color: ${rarityColor}55; box-shadow: 0 0 25px ${rarityColor}11;">
+            <div class="rarity-badge" style="background: ${rarityColor}1a; color: ${rarityColor}; border: 1px solid ${rarityColor}44; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em; padding: 3px 10px; border-radius: 999px; display: inline-block; margin-bottom: var(--spacing-sm); font-weight: 800;">
+              ${rarityLabel}
+            </div>
+            <div class="card-icon" style="font-size: 4rem; filter: drop-shadow(0 0 15px ${selection.color}77); margin-bottom: var(--spacing-xs);">${selection.icon}</div>
+            <h3 class="result-attribute" style="background: linear-gradient(135deg, ${selection.color} 0%, #fff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: var(--spacing-xs);">
+              ${displayName}
             </h3>
             <p class="result-description">${selection.description}</p>
           </div>
