@@ -736,12 +736,12 @@ body.theme-light .lore-section {
   background-color: rgba(0, 0, 0, 0.2);
   border: 1px dashed var(--color-border);
   border-radius: var(--radius-md);
-  height: 280px;
+  min-height: 320px;
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
-  overflow: hidden;
+  padding: var(--spacing-md);
   transition: border-color var(--transition-fast);
 }
 
@@ -774,6 +774,11 @@ body.theme-light .grimoire-display {
 .result-card {
   text-align: center;
   animation: scaleUp var(--transition-medium);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
 }
 
 .result-attribute {
@@ -787,8 +792,9 @@ body.theme-light .grimoire-display {
 
 .result-description {
   color: var(--color-text-secondary);
-  font-size: 1rem;
-  max-width: 320px;
+  font-size: 0.95rem;
+  max-width: 380px;
+  line-height: 1.4;
 }
 
 /* --- Forms & Inputs --- */
